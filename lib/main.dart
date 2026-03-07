@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'subtraction_game.dart';
 
 void main() => runApp(const FeltApp());
 
@@ -60,7 +61,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       final fieldsHeight = h * 0.30;
 
       // BIG strawberry main focus
-      final strawberrySize = w * 0.52; // 🔥 bigger (was 0.30)
+      final strawberrySize = w * 0.52;
 
       // Sun + clouds sizes
       final sunSize = w * 0.12;
@@ -124,7 +125,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               builder: (context, child) {
                 return Positioned(
                   left: (w - strawberrySize) / 2,
-                  // place it above the fields and slightly lower than center
                   top: (h * 0.34) + _bobY.value,
                   child: child!,
                 );
@@ -136,15 +136,41 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ),
             ),
 
-            // 🌾 Fields at bottom
+            // 🌾 Fields at bottom (TAP to enter subtraction game)
             Align(
               alignment: Alignment.bottomCenter,
-              child: SizedBox(
-                height: fieldsHeight,
-                width: double.infinity,
-                child: Image.asset(
-                  'assets/images/fields.png',
-                  fit: BoxFit.cover,
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      transitionDuration: const Duration(milliseconds: 450),
+                      pageBuilder: (_, __, ___) =>
+                          const SubtractionGameScreen(),
+                      transitionsBuilder: (_, animation, __, child) {
+                        final curved = CurvedAnimation(
+                          parent: animation,
+                          curve: Curves.easeInOut,
+                        );
+                        return FadeTransition(
+                          opacity: curved,
+                          child: ScaleTransition(
+                            scale: Tween<double>(begin: 0.98, end: 1.0)
+                                .animate(curved),
+                            child: child,
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                },
+                child: SizedBox(
+                  height: fieldsHeight,
+                  width: double.infinity,
+                  child: Image.asset(
+                    'assets/images/fields.png',
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),
