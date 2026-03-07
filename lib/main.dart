@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'screens/rain_minigame_flow.dart'; // ✅ OPTION B FLOW (lesson placeholder -> matching)
 
 void main() => runApp(const FeltApp());
 
@@ -50,6 +51,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.dispose();
   }
 
+  void _openMiniGame() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const RainLessonPlaceholderScreen(), // ✅ CHANGED (Option B)
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
@@ -60,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       final fieldsHeight = h * 0.30;
 
       // BIG strawberry main focus
-      final strawberrySize = w * 0.52; // 🔥 bigger (was 0.30)
+      final strawberrySize = w * 0.52;
 
       // Sun + clouds sizes
       final sunSize = w * 0.12;
@@ -85,7 +94,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               top: h * 0.08,
               width: cloudBig,
               grey: _cloudsGrey,
-              onTap: () => setState(() => _cloudsGrey = !_cloudsGrey),
+              onTap: _openMiniGame, // ✅ CHANGED
             ),
 
             // ☁️ CLOUD 2 (upper-right-ish)
@@ -94,7 +103,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               top: h * 0.11,
               width: cloudSmall,
               grey: _cloudsGrey,
-              onTap: () => setState(() => _cloudsGrey = !_cloudsGrey),
+              onTap: _openMiniGame, // ✅ CHANGED
             ),
 
             // ☀️ SUN (draggable)
@@ -124,7 +133,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               builder: (context, child) {
                 return Positioned(
                   left: (w - strawberrySize) / 2,
-                  // place it above the fields and slightly lower than center
                   top: (h * 0.34) + _bobY.value,
                   child: child!,
                 );
