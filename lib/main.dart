@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'subtraction_game.dart';
 
+import 'subtraction_game.dart';
+import 'screens/rain_minigame_flow.dart';
 void main() => runApp(const FeltApp());
 
 class FeltApp extends StatelessWidget {
@@ -51,6 +52,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.dispose();
   }
 
+  void _openMiniGame() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const RainLessonPlaceholderScreen(), // ✅ CHANGED (Option B)
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
@@ -86,7 +95,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               top: h * 0.08,
               width: cloudBig,
               grey: _cloudsGrey,
-              onTap: () => setState(() => _cloudsGrey = !_cloudsGrey),
+              onTap: _openMiniGame, // ✅ CHANGED
             ),
 
             // ☁️ CLOUD 2 (upper-right-ish)
@@ -95,7 +104,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               top: h * 0.11,
               width: cloudSmall,
               grey: _cloudsGrey,
-              onTap: () => setState(() => _cloudsGrey = !_cloudsGrey),
+              onTap: _openMiniGame, // ✅ CHANGED
             ),
 
             // ☀️ SUN (draggable)
