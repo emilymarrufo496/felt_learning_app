@@ -174,20 +174,20 @@ class _SubtractionGameScreenState extends State<SubtractionGameScreen> {
                 final highlight = candidateData.isNotEmpty;
 
                 return SizedBox(
-                  width: 300,
+                  width: 400,
                   height: 240,
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
                       Image.asset(
                         'assets/images/basket.png',
-                        width: 300,
+                        width: 400,
                         height: 240,
                         fit: BoxFit.contain,
                       ),
                       if (highlight)
                         Container(
-                          width: 300,
+                          width: 400,
                           height: 240,
                           decoration: BoxDecoration(
                             color: Colors.brown.withOpacity(0.15),
