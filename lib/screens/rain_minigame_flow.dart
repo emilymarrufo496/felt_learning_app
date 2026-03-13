@@ -6,10 +6,12 @@ class RainLessonPlaceholderScreen extends StatefulWidget {
   const RainLessonPlaceholderScreen({super.key});
 
   @override
-  State<RainLessonPlaceholderScreen> createState() => _RainLessonPlaceholderScreenState();
+  State<RainLessonPlaceholderScreen> createState() =>
+      _RainLessonPlaceholderScreenState();
 }
 
-class _RainLessonPlaceholderScreenState extends State<RainLessonPlaceholderScreen> {
+class _RainLessonPlaceholderScreenState
+    extends State<RainLessonPlaceholderScreen> {
   Timer? _timer;
   int _secondsLeft = 2;
 
@@ -32,16 +34,8 @@ class _RainLessonPlaceholderScreenState extends State<RainLessonPlaceholderScree
   void _goToMatching() {
     _timer?.cancel();
     Navigator.of(context).pushReplacement(
-      PageRouteBuilder(
-        pageBuilder: (_, __, ___) => const RainStagesMatchingScreen(),
-        transitionsBuilder: (_, animation, __, child) {
-          final tween = Tween(begin: const Offset(0, 0.06), end: Offset.zero)
-              .chain(CurveTween(curve: Curves.easeOut));
-          return FadeTransition(
-            opacity: animation,
-            child: SlideTransition(position: animation.drive(tween), child: child),
-          );
-        },
+      MaterialPageRoute(
+        builder: (_) => const RainStagesMatchingScreen(),
       ),
     );
   }
@@ -51,13 +45,9 @@ class _RainLessonPlaceholderScreenState extends State<RainLessonPlaceholderScree
     return Scaffold(
       body: Stack(
         children: [
-          // SKY baseline (matches HomeScreen)
           Container(color: const Color(0xFFCFE8FF)),
-
-          // Clouds baseline (matches HomeScreen)
           const _SkyCloudsLayer(),
 
-          // Back button (felt)
           SafeArea(
             child: Align(
               alignment: Alignment.topLeft,
@@ -71,7 +61,6 @@ class _RainLessonPlaceholderScreenState extends State<RainLessonPlaceholderScree
             ),
           ),
 
-          // Prompt bubble (felt)
           SafeArea(
             child: Align(
               alignment: Alignment.topCenter,
@@ -87,7 +76,6 @@ class _RainLessonPlaceholderScreenState extends State<RainLessonPlaceholderScree
             ),
           ),
 
-          // Lesson content
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(14, 120, 14, 16),
@@ -100,17 +88,8 @@ class _RainLessonPlaceholderScreenState extends State<RainLessonPlaceholderScree
                       const SizedBox(height: 10),
                       const Text(
                         'Lesson playing…',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Tap continue to test the matching game.',
                         style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.black.withOpacity(0.75),
-                        ),
-                        textAlign: TextAlign.center,
+                            fontSize: 18, fontWeight: FontWeight.w900),
                       ),
                       const SizedBox(height: 14),
                       ElevatedButton(
@@ -133,10 +112,12 @@ class RainStagesMatchingScreen extends StatefulWidget {
   const RainStagesMatchingScreen({super.key});
 
   @override
-  State<RainStagesMatchingScreen> createState() => _RainStagesMatchingScreenState();
+  State<RainStagesMatchingScreen> createState() =>
+      _RainStagesMatchingScreenState();
 }
 
-class _RainStagesMatchingScreenState extends State<RainStagesMatchingScreen> {
+class _RainStagesMatchingScreenState
+    extends State<RainStagesMatchingScreen> {
   final List<_MatchItem> _items = const [
     _MatchItem(word: 'Evaporation', imageAsset: 'assets/images/evaporation.png'),
     _MatchItem(word: 'Condensation', imageAsset: 'assets/images/condensation.png'),
@@ -162,13 +143,9 @@ class _RainStagesMatchingScreenState extends State<RainStagesMatchingScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // SKY baseline (matches HomeScreen)
           Container(color: const Color(0xFFCFE8FF)),
-
-          // Clouds baseline (matches HomeScreen)
           const _SkyCloudsLayer(),
 
-          // Back button (felt)
           SafeArea(
             child: Align(
               alignment: Alignment.topLeft,
@@ -182,7 +159,6 @@ class _RainStagesMatchingScreenState extends State<RainStagesMatchingScreen> {
             ),
           ),
 
-          // Prompt bubble (felt)
           SafeArea(
             child: Align(
               alignment: Alignment.topCenter,
@@ -198,7 +174,6 @@ class _RainStagesMatchingScreenState extends State<RainStagesMatchingScreen> {
             ),
           ),
 
-          // Game area
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(14, 120, 14, 16),
@@ -207,54 +182,50 @@ class _RainStagesMatchingScreenState extends State<RainStagesMatchingScreen> {
                   Expanded(
                     child: Row(
                       children: [
-                        // Left: targets
                         Expanded(
                           child: ListView.separated(
                             itemCount: _items.length,
-                            separatorBuilder: (_, __) => const SizedBox(height: 12),
-                            itemBuilder: (context, i) => _buildTargetRow(context, _items[i]),
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(height: 12),
+                            itemBuilder: (context, i) =>
+                                _buildTargetRow(_items[i]),
                           ),
                         ),
                         const SizedBox(width: 12),
-
-                        // Right: draggable words
                         Expanded(
-                          child: SingleChildScrollView(
-                            child: Wrap(
-                              spacing: 10,
-                              runSpacing: 10,
-                              children: _words.map((word) {
-                                final done = _matched.contains(word);
-                                return Opacity(
-                                  opacity: done ? 0.35 : 1,
-                                  child: Draggable<String>(
-                                    data: word,
-                                    feedback: Material(
-                                      color: Colors.transparent,
-                                      child: _FeltWordChip(word: word),
-                                    ),
-                                    childWhenDragging: _FeltWordChip(word: word, faded: true),
-                                    child: _FeltWordChip(word: word, disabled: done),
+                          child: Wrap(
+                            spacing: 10,
+                            runSpacing: 10,
+                            children: _words.map((word) {
+                              final done = _matched.contains(word);
+                              return Opacity(
+                                opacity: done ? 0.35 : 1,
+                                child: Draggable<String>(
+                                  data: word,
+                                  feedback: Material(
+                                    color: Colors.transparent,
+                                    child: _FeltWordChip(word: word),
                                   ),
-                                );
-                              }).toList(),
-                            ),
+                                  childWhenDragging:
+                                      _FeltWordChip(word: word, faded: true),
+                                  child: _FeltWordChip(
+                                      word: word, disabled: done),
+                                ),
+                              );
+                            }).toList(),
                           ),
                         ),
                       ],
                     ),
                   ),
-
-                  if (allMatched) ...[
-                    const SizedBox(height: 10),
+                  if (allMatched)
                     _FeltCard(
                       child: Column(
-                        mainAxisSize: MainAxisSize.min,
                         children: [
                           const Text(
-                            '✅ Great job! You matched them all.',
-                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900),
-                            textAlign: TextAlign.center,
+                            'Great job! You matched them all.',
+                            style: TextStyle(
+                                fontSize: 15, fontWeight: FontWeight.w900),
                           ),
                           const SizedBox(height: 10),
                           ElevatedButton(
@@ -264,7 +235,6 @@ class _RainStagesMatchingScreenState extends State<RainStagesMatchingScreen> {
                         ],
                       ),
                     ),
-                  ],
                 ],
               ),
             ),
@@ -274,7 +244,7 @@ class _RainStagesMatchingScreenState extends State<RainStagesMatchingScreen> {
     );
   }
 
-  Widget _buildTargetRow(BuildContext context, _MatchItem item) {
+  Widget _buildTargetRow(_MatchItem item) {
     final isMatched = _matched.contains(item.word);
 
     return DragTarget<String>(
@@ -283,9 +253,6 @@ class _RainStagesMatchingScreenState extends State<RainStagesMatchingScreen> {
         final incoming = details.data;
         if (incoming == item.word) {
           setState(() => _matched.add(item.word));
-          _snack('✅ Correct!');
-        } else {
-          _snack('❌ Try again');
         }
       },
       builder: (context, candidates, rejects) {
@@ -295,7 +262,8 @@ class _RainStagesMatchingScreenState extends State<RainStagesMatchingScreen> {
           duration: const Duration(milliseconds: 120),
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: const Color(0xFFFFF6E9).withOpacity(highlight ? 0.98 : 0.92),
+            color: const Color(0xFFFFF6E9)
+                .withOpacity(highlight ? 0.98 : 0.92),
             borderRadius: BorderRadius.circular(22),
             border: Border.all(
               color: Colors.brown.withOpacity(highlight ? 0.60 : 0.35),
@@ -311,30 +279,14 @@ class _RainStagesMatchingScreenState extends State<RainStagesMatchingScreen> {
           ),
           child: Row(
             children: [
-              // If you don't have these images yet, swap with placeholder (commented below)
-              Image.asset(item.imageAsset, width: 56, height: 56, fit: BoxFit.contain),
-
-              // Placeholder:
-              // Container(
-              //   width: 56,
-              //   height: 56,
-              //   alignment: Alignment.center,
-              //   decoration: BoxDecoration(
-              //     color: Colors.white.withOpacity(0.7),
-              //     borderRadius: BorderRadius.circular(14),
-              //     border: Border.all(color: Colors.black12),
-              //   ),
-              //   child: const Icon(Icons.image),
-              // ),
-
+              Image.asset(item.imageAsset,
+                  width: 56, height: 56, fit: BoxFit.contain),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   isMatched ? item.word : 'Drop here',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: isMatched ? FontWeight.w900 : FontWeight.w800,
-                  ),
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w900),
                 ),
               ),
             ],
@@ -343,15 +295,14 @@ class _RainStagesMatchingScreenState extends State<RainStagesMatchingScreen> {
       },
     );
   }
-
-  void _snack(String msg) {
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
-  }
 }
 
-/// Matches HomeScreen cloud placement/sizing vibe.
-/// Keeps clouds purely decorative in the minigame.
+class _MatchItem {
+  final String word;
+  final String imageAsset;
+  const _MatchItem({required this.word, required this.imageAsset});
+}
+
 class _SkyCloudsLayer extends StatelessWidget {
   const _SkyCloudsLayer();
 
@@ -556,10 +507,4 @@ class _FeltIconButton extends StatelessWidget {
       ),
     );
   }
-}
-
-class _MatchItem {
-  final String word;
-  final String imageAsset;
-  const _MatchItem({required this.word, required this.imageAsset});
 }
