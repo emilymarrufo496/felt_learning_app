@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:felt_learning_app/screens/ladybug_addition_game.dart';
 
 import 'screens/rain_minigame_flow.dart';
 import 'screens/math_menu_screen.dart';
@@ -136,7 +137,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
               ),
 
-              // 🌾 Fields at bottom (TAP to enter math menu)
               Align(
                 alignment: Alignment.bottomCenter,
                 child: GestureDetector(

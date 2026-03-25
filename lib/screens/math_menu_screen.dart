@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../subtraction_game.dart';
+import 'ladybug_addition_game.dart';
 
 class MathMenuScreen extends StatelessWidget {
   const MathMenuScreen({super.key});
@@ -16,7 +17,7 @@ class MathMenuScreen extends StatelessWidget {
             ),
           ),
 
-          /// Back button
+          // Back button
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(12),
@@ -37,13 +38,13 @@ class MathMenuScreen extends StatelessWidget {
             ),
           ),
 
-          /// Main content
+          // Main content
           SafeArea(
             child: Column(
               children: [
                 const SizedBox(height: 30),
 
-                /// Header
+                // Header
                 Center(
                   child: Image.asset(
                     'assets/images/header.png',
@@ -54,7 +55,7 @@ class MathMenuScreen extends StatelessWidget {
 
                 const SizedBox(height: 35),
 
-                /// Cards
+                // Cards
                 Expanded(
                   child: Center(
                     child: Padding(
@@ -81,7 +82,8 @@ class MathMenuScreen extends StatelessWidget {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) => const SubtractionGameScreen(),
+                                    builder: (_) =>
+                                        const SubtractionGameScreen(),
                                   ),
                                 );
                               },
@@ -93,7 +95,13 @@ class MathMenuScreen extends StatelessWidget {
                               imagePath: 'assets/images/addition.png',
                               width: 220,
                               onTap: () {
-                                // no action yet
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        const LadybugAdditionGameScreen(),
+                                  ),
+                                );
                               },
                             ),
                           ],
