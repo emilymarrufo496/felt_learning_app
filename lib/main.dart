@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'subtraction_game.dart';
 import 'screens/rain_minigame_flow.dart';
+import 'screens/water_cycle_order_game.dart';
+
 void main() => runApp(const FeltApp());
 
 class FeltApp extends StatelessWidget {
@@ -55,7 +57,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void _openMiniGame() {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => const RainLessonPlaceholderScreen(), // ✅ CHANGED (Option B)
+        builder: (_) => const RainLessonPlaceholderScreen(),
+      ),
+    );
+  }
+
+  void _openOrderGame() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const WaterCycleOrderGame(),
       ),
     );
   }
@@ -66,18 +76,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       final w = constraints.maxWidth;
       final h = constraints.maxHeight;
 
-      // Fields strip height
       final fieldsHeight = h * 0.30;
-
-      // BIG strawberry main focus
       final strawberrySize = w * 0.52;
-
-      // Sun + clouds sizes
       final sunSize = w * 0.12;
       final cloudBig = w * 0.44;
       final cloudSmall = w * 0.36;
 
-      // Set initial sun position once
       if (!_sunInitialized) {
         _sunPos = Offset(w * 0.80, h * 0.05);
         _sunInitialized = true;
@@ -89,22 +93,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             // SKY
             Container(color: const Color(0xFFCFE8FF)),
 
-            // ☁️ CLOUD 1 (top-left)
+            // ☁️ CLOUD 1 -> rain lesson + matching game
             _cloud(
               left: w * 0.08,
               top: h * 0.08,
               width: cloudBig,
               grey: _cloudsGrey,
-              onTap: _openMiniGame, // ✅ CHANGED
+              onTap: _openMiniGame,
             ),
 
-            // ☁️ CLOUD 2 (upper-right-ish)
+            // ☁️ CLOUD 2 -> water cycle order game
             _cloud(
               left: w * 0.52,
               top: h * 0.11,
               width: cloudSmall,
               grey: _cloudsGrey,
-              onTap: _openMiniGame, // ✅ CHANGED
+              onTap: _openOrderGame,
             ),
 
             // ☀️ SUN (draggable)
@@ -145,7 +149,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ),
             ),
 
-            // 🌾 Fields at bottom (TAP to enter subtraction game)
+            // 🌾 Fields at bottom -> subtraction game
             Align(
               alignment: Alignment.bottomCenter,
               child: GestureDetector(
@@ -200,7 +204,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       0.2126, 0.7152, 0.0722, 0, 0,
       0.2126, 0.7152, 0.0722, 0, 0,
       0.2126, 0.7152, 0.0722, 0, 0,
-      0,      0,      0,      1, 0,
+      0, 0, 0, 1, 0,
     ];
 
     final cloudImage = Image.asset(
