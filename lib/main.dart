@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:felt_learning_app/screens/ladybug_addition_game.dart';
-
+import 'screens/english_zone_screen.dart';
 import 'screens/rain_minigame_flow.dart';
 import 'screens/math_menu_screen.dart';
 
@@ -58,6 +58,29 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => const RainLessonPlaceholderScreen(),
+      ),
+    );
+  }
+
+  void _openEnglishZone() {
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 450),
+        pageBuilder: (_, __, ___) => const EnglishZoneScreen(),
+        transitionsBuilder: (_, animation, __, child) {
+          final curved = CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeInOut,
+          );
+          return FadeTransition(
+            opacity: curved,
+            child: ScaleTransition(
+              scale: Tween<double>(begin: 0.98, end: 1.0).animate(curved),
+              child: child,
+            ),
+          );
+        },
       ),
     );
   }
@@ -130,10 +153,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     child: child!,
                   );
                 },
-                child: Image.asset(
-                  'assets/images/strawberry.png',
-                  width: strawberrySize,
-                  fit: BoxFit.contain,
+                child: GestureDetector(
+                  onTap: _openEnglishZone,
+                  child: Image.asset(
+                    'assets/images/strawberry.png',
+                    width: strawberrySize,
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ),
 

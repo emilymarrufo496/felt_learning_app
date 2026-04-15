@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 
 class SubtractionGameScreen extends StatefulWidget {
@@ -12,6 +13,7 @@ class _SubtractionGameScreenState extends State<SubtractionGameScreen> {
   static const int startApples = 10;
 
   final _rng = Random();
+  final AudioPlayer _player = AudioPlayer();
 
   int taken = 2;
   int remaining = startApples;
@@ -27,6 +29,16 @@ class _SubtractionGameScreenState extends State<SubtractionGameScreen> {
   void initState() {
     super.initState();
     _newRound();
+  }
+
+  Future<void> _playCorrectSound() async {
+    await _player.stop();
+    await _player.play(AssetSource('audio/correct.mp3'));
+  }
+
+  Future<void> _playWrongSound() async {
+    await _player.stop();
+    await _player.play(AssetSource('audio/wrong.mp3'));
   }
 
   void _newRound() {
@@ -118,9 +130,21 @@ class _SubtractionGameScreenState extends State<SubtractionGameScreen> {
     final nowTaken = startApples - remaining;
     if (nowTaken != taken) return;
 
+    if (value == correctAnswer) {
+      _playCorrectSound();
+    } else {
+      _playWrongSound();
+    }
+
     setState(() {
       answered = true;
     });
+  }
+
+  @override
+  void dispose() {
+    _player.dispose();
+    super.dispose();
   }
 
   @override
@@ -164,7 +188,6 @@ class _SubtractionGameScreenState extends State<SubtractionGameScreen> {
             ),
           ),
 
-          // Basket
           Positioned(
             right: 18,
             bottom: 18,

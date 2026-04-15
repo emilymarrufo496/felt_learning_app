@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 
 class LadybugAdditionGameScreen extends StatefulWidget {
@@ -13,6 +14,7 @@ class _LadybugAdditionGameScreenState extends State<LadybugAdditionGameScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _wiggleController;
   final Random _rng = Random();
+  final AudioPlayer _player = AudioPlayer();
 
   late List<LadybugData> roundLadybugs;
   final List<LadybugData> basketLadybugs = [];
@@ -33,6 +35,16 @@ class _LadybugAdditionGameScreenState extends State<LadybugAdditionGameScreen>
     )..repeat();
 
     _newRound();
+  }
+
+  Future<void> _playCorrectSound() async {
+    await _player.stop();
+    await _player.play(AssetSource('audio/correct.mp3'));
+  }
+
+  Future<void> _playWrongSound() async {
+    await _player.stop();
+    await _player.play(AssetSource('audio/wrong.mp3'));
   }
 
   void _newRound() {
@@ -95,15 +107,20 @@ class _LadybugAdditionGameScreenState extends State<LadybugAdditionGameScreen>
   }
 
   void _handleAnswer(int selected) {
-    setState(() {
-      answered = true;
-      answeredCorrectly = selected == correctAnswer;
-    });
+    if (basketLadybugs.length != 2) return;
+    if (answered) return;
 
-    if (answeredCorrectly) {
-      Future.delayed(const Duration(milliseconds: 1200), () {
-        if (!mounted) return;
-        _newRound();
+    if (selected == correctAnswer) {
+      _playCorrectSound();
+      setState(() {
+        answered = true;
+        answeredCorrectly = true;
+      });
+    } else {
+      _playWrongSound();
+      setState(() {
+        answered = false;
+        answeredCorrectly = false;
       });
     }
   }
@@ -111,205 +128,195 @@ class _LadybugAdditionGameScreenState extends State<LadybugAdditionGameScreen>
   @override
   void dispose() {
     _wiggleController.dispose();
+    _player.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final canAnswer = basketLadybugs.length == 2;
+    final pickedCount = basketLadybugs.length;
+    final canAnswer = pickedCount == 2;
 
     return Scaffold(
-      body: SafeArea(
-        child: AnimatedBuilder(
-          animation: _wiggleController,
-          builder: (context, child) {
-            final t = _wiggleController.value * 2 * pi;
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/background.jpg',
+              fit: BoxFit.cover,
+            ),
+          ),
 
-            return Stack(
-              children: [
-                Positioned.fill(
-                  child: Image.asset(
-                    'assets/images/background.jpg',
-                    fit: BoxFit.cover,
-                  ),
+          SafeArea(
+            child: Align(
+              alignment: Alignment.topLeft,
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: _FeltIconButton(
+                  icon: Icons.arrow_back,
+                  onTap: () => Navigator.pop(context),
                 ),
+              ),
+            ),
+          ),
 
-                const Positioned(
-                  top: 20,
-                  left: 24,
-                  right: 24,
-                  child: Text(
-                    'Catch the Ladybugs!',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF5A3E2B),
-                    ),
-                  ),
+          SafeArea(
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: _FeltPrompt(
+                  line1: "Catch 2 ladybugs.",
+                  line2: "Drag them into the basket.",
+                  subline: "Picked: $pickedCount / 2",
                 ),
+              ),
+            ),
+          ),
 
-                Positioned(
-                  top: 68,
-                  left: 24,
-                  right: 24,
-                  child: Text(
-                    canAnswer
-                        ? 'How many spots are there altogether?'
-                        : 'Pick any 2 ladybugs and drag them into the basket.',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      color: Color(0xFF7A5C47),
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
+          Positioned(
+            right: 18,
+            bottom: 210,
+            child: DragTarget<LadybugData>(
+              onAcceptWithDetails: (details) {
+                final bug = details.data;
 
-                Positioned(
-                  bottom: 45,
-                  right: 20,
-                  child: DragTarget<LadybugData>(
-                    onAcceptWithDetails: (details) {
-                      final bug = details.data;
+                if (basketLadybugs.length >= 2 || answered) return;
 
-                      if (basketLadybugs.length >= 2) return;
+                if (!basketLadybugs.contains(bug)) {
+                  setState(() {
+                    basketLadybugs.add(bug);
 
-                      if (!basketLadybugs.contains(bug)) {
-                        setState(() {
-                          basketLadybugs.add(bug);
+                    if (basketLadybugs.length == 2) {
+                      correctAnswer =
+                          basketLadybugs[0].dots + basketLadybugs[1].dots;
+                      choices = _makeTwoChoices(correctAnswer);
+                    }
+                  });
+                }
+              },
+              builder: (context, candidateData, rejectedData) {
+                final highlight = candidateData.isNotEmpty;
 
-                          if (basketLadybugs.length == 2) {
-                            correctAnswer =
-                                basketLadybugs[0].dots + basketLadybugs[1].dots;
-                            choices = _makeTwoChoices(correctAnswer);
-                          }
-                        });
-                      }
-                    },
-                    builder: (context, candidateData, rejectedData) {
-                      return Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          Image.asset(
-                            'assets/images/addition_basket.png',
-                            width: 250,
+                return SizedBox(
+                  width: 300,
+                  height: 240,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Image.asset(
+                        'assets/images/addition_basket.png',
+                        width: 300,
+                        height: 240,
+                        fit: BoxFit.contain,
+                      ),
+                      if (highlight)
+                        Container(
+                          width: 300,
+                          height: 240,
+                          decoration: BoxDecoration(
+                            color: Colors.brown.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(22),
                           ),
-                          ...List.generate(basketLadybugs.length, (index) {
-                            return Positioned(
-                              left: 55 + (index * 45),
-                              top: 40 + (index * 8),
-                              child: Image.asset(
-                                basketLadybugs[index].asset,
-                                width: 75,
-                              ),
-                            );
-                          }),
-                        ],
-                      );
-                    },
-                  ),
-                ),
-
-                ...roundLadybugs
-                    .where((bug) => !basketLadybugs.contains(bug))
-                    .map((bug) {
-                  final wiggleX = sin(t + bug.phase) * 12;
-                  final wiggleY = cos(t + bug.phase) * 8;
-
-                  return Positioned(
-                    left: bug.baseX + wiggleX,
-                    top: bug.baseY + wiggleY,
-                    child: basketLadybugs.length >= 2
-                        ? Transform.rotate(
-                            angle: sin(t + bug.phase) * 0.08,
-                            child: Image.asset(
-                              bug.asset,
-                              width: 110,
-                            ),
-                          )
-                        : Draggable<LadybugData>(
-                            data: bug,
-                            feedback: Material(
-                              color: Colors.transparent,
-                              child: Image.asset(
-                                bug.asset,
-                                width: 110,
-                              ),
-                            ),
-                            childWhenDragging: Opacity(
-                              opacity: 0.25,
-                              child: Image.asset(
-                                bug.asset,
-                                width: 110,
-                              ),
-                            ),
-                            child: Transform.rotate(
-                              angle: sin(t + bug.phase) * 0.08,
-                              child: Image.asset(
-                                bug.asset,
-                                width: 110,
-                              ),
-                            ),
-                          ),
-                  );
-                }),
-
-                if (canAnswer)
-                  Positioned(
-                    left: 24,
-                    right: 24,
-                    bottom: 180,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: choices.map((choice) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
-                          child: ElevatedButton(
-                            onPressed: answered ? null : () => _handleAnswer(choice),
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 34,
-                                vertical: 18,
-                              ),
-                              backgroundColor: const Color(0xFFFFE7EF),
-                              foregroundColor: const Color(0xFF7A3E48),
-                              textStyle: const TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                            ),
-                            child: Text('$choice'),
+                        ),
+                      ...List.generate(basketLadybugs.length, (index) {
+                        return Positioned(
+                          left: 95 + (index * 48),
+                          top: 78 + (index * 6),
+                          child: Image.asset(
+                            basketLadybugs[index].asset,
+                            width: 70,
                           ),
                         );
-                      }).toList(),
-                    ),
+                      }),
+                    ],
                   ),
+                );
+              },
+            ),
+          ),
 
-                if (answered)
-                  Positioned(
-                    left: 24,
-                    right: 24,
-                    bottom: 120,
-                    child: Text(
-                      answeredCorrectly ? 'Yay! Great job!' : 'Try again!',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: answeredCorrectly
-                            ? const Color(0xFF4E8A3A)
-                            : const Color(0xFFC45A5A),
-                      ),
-                    ),
+          SafeArea(
+            child: AnimatedBuilder(
+              animation: _wiggleController,
+              builder: (context, child) {
+                final t = _wiggleController.value * 2 * pi;
+
+                return LayoutBuilder(
+                  builder: (context, constraints) {
+                    return Stack(
+                      children: [
+                        ...roundLadybugs
+                            .where((bug) => !basketLadybugs.contains(bug))
+                            .map((bug) {
+                          final wiggleX = sin(t + bug.phase) * 12;
+                          final wiggleY = cos(t + bug.phase) * 8;
+
+                          return Positioned(
+                            left: bug.baseX + wiggleX,
+                            top: bug.baseY + wiggleY,
+                            child: basketLadybugs.length >= 2
+                                ? Transform.rotate(
+                                    angle: sin(t + bug.phase) * 0.08,
+                                    child: Image.asset(
+                                      bug.asset,
+                                      width: 110,
+                                    ),
+                                  )
+                                : Draggable<LadybugData>(
+                                    data: bug,
+                                    feedback: Material(
+                                      color: Colors.transparent,
+                                      child: Image.asset(
+                                        bug.asset,
+                                        width: 110,
+                                      ),
+                                    ),
+                                    childWhenDragging: Opacity(
+                                      opacity: 0.25,
+                                      child: Image.asset(
+                                        bug.asset,
+                                        width: 110,
+                                      ),
+                                    ),
+                                    child: Transform.rotate(
+                                      angle: sin(t + bug.phase) * 0.08,
+                                      child: Image.asset(
+                                        bug.asset,
+                                        width: 110,
+                                      ),
+                                    ),
+                                  ),
+                          );
+                        }),
+                      ],
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+
+          if (canAnswer)
+            SafeArea(
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 14),
+                  child: _FeltChoices(
+                    question:
+                        "You picked 2 ladybugs.\nHow many spots are there altogether?",
+                    a: choices[0],
+                    b: choices[1],
+                    disabled: answered,
+                    onPick: _handleAnswer,
+                    onNewRound: _newRound,
+                    showNext: answeredCorrectly,
                   ),
-              ],
-            );
-          },
-        ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -329,4 +336,229 @@ class LadybugData {
     required this.baseY,
     required this.phase,
   });
+}
+
+class _FeltPrompt extends StatelessWidget {
+  final String line1;
+  final String line2;
+  final String subline;
+
+  const _FeltPrompt({
+    required this.line1,
+    required this.line2,
+    required this.subline,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF6E9).withOpacity(0.92),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: Colors.brown.withOpacity(0.35), width: 2),
+        boxShadow: const [
+          BoxShadow(
+            blurRadius: 14,
+            offset: Offset(0, 7),
+            color: Colors.black26,
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.7),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: Colors.black12),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(6),
+              child: Image.asset(
+                'assets/images/two.png',
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "$line1  $line2",
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subline,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FeltIconButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _FeltIconButton({
+    required this.icon,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Ink(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFF6E9).withOpacity(0.92),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.black12),
+            boxShadow: const [
+              BoxShadow(
+                blurRadius: 10,
+                offset: Offset(0, 5),
+                color: Colors.black26,
+              ),
+            ],
+          ),
+          child: Icon(icon, size: 22),
+        ),
+      ),
+    );
+  }
+}
+
+class _FeltChoices extends StatelessWidget {
+  final String question;
+  final int a;
+  final int b;
+  final bool disabled;
+  final void Function(int) onPick;
+  final VoidCallback onNewRound;
+  final bool showNext;
+
+  const _FeltChoices({
+    required this.question,
+    required this.a,
+    required this.b,
+    required this.disabled,
+    required this.onPick,
+    required this.onNewRound,
+    required this.showNext,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 14),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF6E9).withOpacity(0.92),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: Colors.brown.withOpacity(0.35), width: 2),
+        boxShadow: const [
+          BoxShadow(
+            blurRadius: 14,
+            offset: Offset(0, 7),
+            color: Colors.black26,
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            question,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _ChoiceButton(
+                label: "$a",
+                onTap: disabled ? null : () => onPick(a),
+              ),
+              const SizedBox(width: 12),
+              _ChoiceButton(
+                label: "$b",
+                onTap: disabled ? null : () => onPick(b),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              OutlinedButton(
+                onPressed: onNewRound,
+                child: const Text("New Round"),
+              ),
+              const SizedBox(width: 10),
+              ElevatedButton(
+                onPressed: showNext ? onNewRound : null,
+                child: const Text("Next"),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ChoiceButton extends StatelessWidget {
+  final String label;
+  final VoidCallback? onTap;
+
+  const _ChoiceButton({
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 120,
+      height: 54,
+      child: ElevatedButton(
+        onPressed: onTap,
+        child: Text(
+          label,
+          style: const TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ),
+    );
+  }
 }
