@@ -1,6 +1,5 @@
 import 'dart:math';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 class MissingLetterGameScreen extends StatefulWidget {
@@ -12,12 +11,11 @@ class MissingLetterGameScreen extends StatefulWidget {
 }
 
 class _MissingLetterGameScreenState extends State<MissingLetterGameScreen> {
-  final PageController _pageController = PageController(viewportFraction: 0.26);
   final AudioPlayer _player = AudioPlayer();
 
   late final List<SpellingWord> words;
 
-  int selectedIndex = 0;
+  int selectedIndex = -1;
   bool inPuzzle = false;
 
   SpellingWord? currentWord;
@@ -33,81 +31,139 @@ class _MissingLetterGameScreenState extends State<MissingLetterGameScreen> {
 
     words = [
       SpellingWord(
-        name: 'cat',
+        name: 'gato',
         cardImage: 'assets/images/card_cat.png',
         rounds: [
-          PuzzleRound.missingLetter(
-            puzzleImage: 'assets/images/card_c_t.png',
-            correctLetters: ['A'],
-            choices: ['A', 'K', 'T'],
-            slotOffsets: const [Offset(0.50, 0.77)],
-          ),
-          PuzzleRound.missingLetter(
-            puzzleImage: 'assets/images/card_at.png',
-            correctLetters: ['C'],
-            choices: ['A', 'C', 'T'],
-            slotOffsets: const [Offset(0.22, 0.77)],
-          ),
-          PuzzleRound.fullWord(
-            puzzleImage: 'assets/images/card_cat.png',
-            correctLetters: ['C', 'A', 'T'],
-            choices: ['C', 'A', 'T', 'K'],
+          PuzzleRound(
+            cardImage: 'assets/images/card_cat.png',
+            targetLetters: ['G', 'A', 'T', 'O'],
+            draggableSlotIndexes: [1],
+            choices: ['A', 'G', 'O', 'T'],
             slotOffsets: const [
-              Offset(0.22, 0.77),
-              Offset(0.50, 0.77),
-              Offset(0.78, 0.77),
+              Offset(0.18, 0.77),
+              Offset(0.39, 0.77),
+              Offset(0.60, 0.77),
+              Offset(0.81, 0.77),
+            ],
+          ),
+          PuzzleRound(
+            cardImage: 'assets/images/card_cat.png',
+            targetLetters: ['G', 'A', 'T', 'O'],
+            draggableSlotIndexes: [0],
+            choices: ['G', 'A', 'T', 'O'],
+            slotOffsets: const [
+              Offset(0.18, 0.77),
+              Offset(0.39, 0.77),
+              Offset(0.60, 0.77),
+              Offset(0.81, 0.77),
+            ],
+          ),
+          PuzzleRound(
+            cardImage: 'assets/images/card_cat.png',
+            targetLetters: ['G', 'A', 'T', 'O'],
+            draggableSlotIndexes: [0, 1, 2, 3],
+            choices: ['G', 'A', 'T', 'O', 'P', 'R'],
+            slotOffsets: const [
+              Offset(0.18, 0.77),
+              Offset(0.39, 0.77),
+              Offset(0.60, 0.77),
+              Offset(0.81, 0.77),
             ],
           ),
         ],
       ),
       SpellingWord(
-        name: 'dog',
+        name: 'perro',
         cardImage: 'assets/images/card_dog.png',
         rounds: [
-          PuzzleRound.missingLetter(
-            puzzleImage: 'assets/images/card_og.png',
-            correctLetters: ['D'],
-            choices: ['D', 'O', 'G'],
-            slotOffsets: const [Offset(0.20, 0.77)],
-          ),
-          PuzzleRound.missingLetter(
-            puzzleImage: 'assets/images/card_do.png',
-            correctLetters: ['G'],
-            choices: ['D', 'O', 'G'],
-            slotOffsets: const [Offset(0.76, 0.77)],
-          ),
-          PuzzleRound.fullWord(
-            puzzleImage: 'assets/images/card_dog.png',
-            correctLetters: ['D', 'O', 'G'],
-            choices: ['D', 'O', 'G', 'K'],
+          PuzzleRound(
+            cardImage: 'assets/images/card_dog.png',
+            targetLetters: ['P', 'E', 'R', 'R', 'O'],
+            draggableSlotIndexes: [0],
+            choices: ['P', 'E', 'R', 'O'],
             slotOffsets: const [
-              Offset(0.22, 0.77),
-              Offset(0.50, 0.77),
-              Offset(0.78, 0.77),
+              Offset(0.12, 0.77),
+              Offset(0.30, 0.77),
+              Offset(0.48, 0.77),
+              Offset(0.66, 0.77),
+              Offset(0.84, 0.77),
+            ],
+          ),
+          PuzzleRound(
+            cardImage: 'assets/images/card_dog.png',
+            targetLetters: ['P', 'E', 'R', 'R', 'O'],
+            draggableSlotIndexes: [4],
+            choices: ['P', 'E', 'R', 'O'],
+            slotOffsets: const [
+              Offset(0.12, 0.77),
+              Offset(0.30, 0.77),
+              Offset(0.48, 0.77),
+              Offset(0.66, 0.77),
+              Offset(0.84, 0.77),
+            ],
+          ),
+          PuzzleRound(
+            cardImage: 'assets/images/card_dog.png',
+            targetLetters: ['P', 'E', 'R', 'R', 'O'],
+            draggableSlotIndexes: [0, 1, 2, 3, 4],
+            choices: ['P', 'E', 'R', 'R', 'O', 'G', 'A'],
+            slotOffsets: const [
+              Offset(0.12, 0.77),
+              Offset(0.30, 0.77),
+              Offset(0.48, 0.77),
+              Offset(0.66, 0.77),
+              Offset(0.84, 0.77),
             ],
           ),
         ],
       ),
       SpellingWord(
-        name: 'horse',
+        name: 'caballo',
         cardImage: 'assets/images/card_horse.png',
         rounds: [
-          PuzzleRound.missingLetter(
-            puzzleImage: 'assets/images/card_orse.png',
-            correctLetters: ['H'],
-            choices: ['H', 'O', 'R'],
-            slotOffsets: const [Offset(0.15, 0.77)],
-          ),
-          PuzzleRound.fullWord(
-            puzzleImage: 'assets/images/card_horse.png',
-            correctLetters: ['H', 'O', 'R', 'S', 'E'],
-            choices: ['H', 'O', 'R', 'S', 'E', 'D', 'G', 'K'],
+          PuzzleRound(
+            cardImage: 'assets/images/card_horse.png',
+            targetLetters: ['C', 'A', 'B', 'A', 'L', 'L', 'O'],
+            draggableSlotIndexes: [0],
+            choices: ['C', 'A', 'B', 'O'],
             slotOffsets: const [
-              Offset(0.15, 0.77),
-              Offset(0.32, 0.77),
-              Offset(0.49, 0.77),
-              Offset(0.66, 0.77),
-              Offset(0.83, 0.77),
+              Offset(0.08, 0.77),
+              Offset(0.22, 0.77),
+              Offset(0.36, 0.77),
+              Offset(0.50, 0.77),
+              Offset(0.64, 0.77),
+              Offset(0.78, 0.77),
+              Offset(0.92, 0.77),
+            ],
+          ),
+          PuzzleRound(
+            cardImage: 'assets/images/card_horse.png',
+            targetLetters: ['C', 'A', 'B', 'A', 'L', 'L', 'O'],
+            draggableSlotIndexes: [6],
+            choices: ['C', 'A', 'L', 'O'],
+            slotOffsets: const [
+              Offset(0.08, 0.77),
+              Offset(0.22, 0.77),
+              Offset(0.36, 0.77),
+              Offset(0.50, 0.77),
+              Offset(0.64, 0.77),
+              Offset(0.78, 0.77),
+              Offset(0.92, 0.77),
+            ],
+          ),
+          PuzzleRound(
+            cardImage: 'assets/images/card_horse.png',
+            targetLetters: ['C', 'A', 'B', 'A', 'L', 'L', 'O'],
+            draggableSlotIndexes: [0, 1, 2, 3, 4, 5, 6],
+            choices: ['C', 'A', 'B', 'A', 'L', 'L', 'O', 'G', 'P'],
+            slotOffsets: const [
+              Offset(0.08, 0.77),
+              Offset(0.22, 0.77),
+              Offset(0.36, 0.77),
+              Offset(0.50, 0.77),
+              Offset(0.64, 0.77),
+              Offset(0.78, 0.77),
+              Offset(0.92, 0.77),
             ],
           ),
         ],
@@ -158,27 +214,22 @@ class _MissingLetterGameScreenState extends State<MissingLetterGameScreen> {
         currentSlotIndex = 0;
       });
     } else {
-      setState(() {
-        inPuzzle = false;
-        currentWord = null;
-        currentRound = null;
-        completed = false;
-        currentSlotIndex = 0;
-        currentRoundIndex = 0;
-      });
+      _backToCards();
     }
   }
 
   void _handleDroppedLetter(String droppedLetter, int slotIndex) {
     if (currentRound == null || completed) return;
-    if (slotIndex != currentSlotIndex) return;
 
-    final neededLetter = currentRound!.correctLetters[slotIndex];
+    final activeSlot = currentRound!.draggableSlotIndexes[currentSlotIndex];
+    if (slotIndex != activeSlot) return;
+
+    final neededLetter = currentRound!.targetLetters[slotIndex];
 
     if (droppedLetter == neededLetter) {
       _playCorrectSound();
 
-      if (slotIndex == currentRound!.correctLetters.length - 1) {
+      if (currentSlotIndex == currentRound!.draggableSlotIndexes.length - 1) {
         setState(() {
           currentSlotIndex++;
           completed = true;
@@ -195,7 +246,6 @@ class _MissingLetterGameScreenState extends State<MissingLetterGameScreen> {
 
   @override
   void dispose() {
-    _pageController.dispose();
     _player.dispose();
     super.dispose();
   }
@@ -233,80 +283,46 @@ class _MissingLetterGameScreenState extends State<MissingLetterGameScreen> {
               child: Padding(
                 padding: const EdgeInsets.only(top: 10),
                 child: _FeltPrompt(
-                  line1: 'Pick a word.',
-                  line2: 'Swipe and tap a card to start.',
-                  subline: 'Spelling Zone',
+                  line1: 'Escoge una tarjeta.',
+                  line2: 'Pasa el mouse y toca para empezar.',
+                  subline: 'Zona de palabras',
                   iconAsset: 'assets/images/card_cat.png',
                 ),
               ),
             ),
           ),
           Padding(
-            padding: const EdgeInsets.only(top: 145, bottom: 50),
-            child: Column(
-              children: [
-                Expanded(
-                  child: ScrollConfiguration(
-                    behavior: const MaterialScrollBehavior().copyWith(
-                      dragDevices: {
-                        PointerDeviceKind.touch,
-                        PointerDeviceKind.mouse,
-                        PointerDeviceKind.trackpad,
-                      },
-                    ),
-                    child: PageView.builder(
-                      controller: _pageController,
-                      itemCount: words.length,
-                      padEnds: false,
-                      onPageChanged: (index) {
-                        setState(() {
-                          selectedIndex = index;
-                        });
-                      },
-                      itemBuilder: (context, index) {
-                        final word = words[index];
-                        final isSelected = index == selectedIndex;
+            padding: const EdgeInsets.only(top: 155),
+            child: Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(words.length, (index) {
+                  final word = words[index];
+                  final isHovered = index == selectedIndex;
 
-                        return GestureDetector(
-                          onTap: () => _startPuzzle(word),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 220),
-                            curve: Curves.easeOut,
-                            margin: EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: isSelected ? 18 : 58,
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Expanded(
-                                  child: AnimatedScale(
-                                    duration: const Duration(milliseconds: 220),
-                                    scale: isSelected ? 1.0 : 0.82,
-                                    child: Image.asset(
-                                      word.cardImage,
-                                      fit: BoxFit.contain,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  word.name.toUpperCase(),
-                                  style: TextStyle(
-                                    fontSize: isSelected ? 20 : 16,
-                                    fontWeight: FontWeight.w900,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                              ],
-                            ),
+                  return MouseRegion(
+                    onEnter: (_) => setState(() => selectedIndex = index),
+                    onExit: (_) => setState(() => selectedIndex = -1),
+                    child: GestureDetector(
+                      onTap: () => _startPuzzle(word),
+                      child: AnimatedScale(
+                        duration: const Duration(milliseconds: 180),
+                        curve: Curves.easeOutBack,
+                        scale: isHovered ? 1.12 : 1.0,
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 24),
+                          width: 260,
+                          height: 390,
+                          child: Image.asset(
+                            word.cardImage,
+                            fit: BoxFit.contain,
                           ),
-                        );
-                      },
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ],
+                  );
+                }),
+              ),
             ),
           ),
         ],
@@ -344,11 +360,13 @@ class _MissingLetterGameScreenState extends State<MissingLetterGameScreen> {
               child: Padding(
                 padding: const EdgeInsets.only(top: 10),
                 child: _FeltPrompt(
-                  line1: round.type == PuzzleType.fullWord
-                      ? 'Spell the word.'
-                      : 'Finish the word.',
-                  line2: 'Drag the letter into the spot.',
-                  subline: 'Word: ${currentWord!.name}',
+                  line1: round.isFullWord
+                      ? 'Forma la palabra.'
+                      : 'Completa la palabra.',
+                  line2: round.isFullWord
+                      ? 'Arrastra las letras al lugar correcto.'
+                      : 'Arrastra la letra al lugar correcto.',
+                  subline: 'Palabra: ${currentWord!.name}',
                   iconAsset: currentWord!.cardImage,
                 ),
               ),
@@ -374,7 +392,7 @@ class _MissingLetterGameScreenState extends State<MissingLetterGameScreen> {
                             children: [
                               Positioned.fill(
                                 child: Image.asset(
-                                  round.puzzleImage,
+                                  round.cardImage,
                                   fit: BoxFit.fill,
                                 ),
                               ),
@@ -410,12 +428,12 @@ class _MissingLetterGameScreenState extends State<MissingLetterGameScreen> {
                   children: [
                     OutlinedButton(
                       onPressed: _backToCards,
-                      child: const Text('Back to Cards'),
+                      child: const Text('Regresar'),
                     ),
                     const SizedBox(width: 10),
                     ElevatedButton(
                       onPressed: completed ? _nextRoundSameWord : null,
-                      child: const Text('Next'),
+                      child: const Text('Siguiente'),
                     ),
                   ],
                 ),
@@ -433,22 +451,34 @@ class _MissingLetterGameScreenState extends State<MissingLetterGameScreen> {
     required double cardWidth,
     required double cardHeight,
   }) {
-    final bool isFilled = slotIndex < currentSlotIndex;
-    final String placedLetter =
-        isFilled ? currentRound!.correctLetters[slotIndex] : '';
+    final round = currentRound!;
+    final isDraggableSlot = round.draggableSlotIndexes.contains(slotIndex);
+    final draggableOrder = round.draggableSlotIndexes.indexOf(slotIndex);
+    final isFilledDraggable =
+        isDraggableSlot && draggableOrder < currentSlotIndex;
+
+    final shouldShowLetter = !isDraggableSlot || isFilledDraggable;
+    final placedLetter = round.targetLetters[slotIndex];
 
     return Positioned(
       left: (offset.dx * cardWidth) - 38,
       top: (offset.dy * cardHeight) - 38,
       child: DragTarget<String>(
-        onWillAcceptWithDetails: (_) =>
-            !completed && slotIndex == currentSlotIndex,
+        onWillAcceptWithDetails: (_) {
+          if (completed) return false;
+          if (currentSlotIndex >= round.draggableSlotIndexes.length) {
+            return false;
+          }
+          return slotIndex == round.draggableSlotIndexes[currentSlotIndex];
+        },
         onAcceptWithDetails: (details) {
           _handleDroppedLetter(details.data, slotIndex);
         },
         builder: (context, candidateData, rejectedData) {
           final highlight =
-              candidateData.isNotEmpty && slotIndex == currentSlotIndex;
+              candidateData.isNotEmpty &&
+              currentSlotIndex < round.draggableSlotIndexes.length &&
+              slotIndex == round.draggableSlotIndexes[currentSlotIndex];
 
           return AnimatedContainer(
             duration: const Duration(milliseconds: 120),
@@ -461,24 +491,21 @@ class _MissingLetterGameScreenState extends State<MissingLetterGameScreen> {
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(18),
             ),
-            child: isFilled
-                ? Image.asset(
-                    'assets/images/$placedLetter.png',
-                    width: 62,
-                    height: 62,
-                    fit: BoxFit.contain,
-                  )
-                : const SizedBox.shrink(),
+            child: shouldShowLetter
+                ? _LetterTile(letter: placedLetter, size: 62)
+                : Container(
+                    width: 58,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF6B2A3A),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
           );
         },
       ),
     );
   }
-}
-
-enum PuzzleType {
-  missingLetter,
-  fullWord,
 }
 
 class SpellingWord {
@@ -494,25 +521,21 @@ class SpellingWord {
 }
 
 class PuzzleRound {
-  final PuzzleType type;
-  final String puzzleImage;
-  final List<String> correctLetters;
+  final String cardImage;
+  final List<String> targetLetters;
+  final List<int> draggableSlotIndexes;
   final List<String> choices;
   final List<Offset> slotOffsets;
 
-  PuzzleRound.missingLetter({
-    required this.puzzleImage,
-    required this.correctLetters,
+  PuzzleRound({
+    required this.cardImage,
+    required this.targetLetters,
+    required this.draggableSlotIndexes,
     required this.choices,
     required this.slotOffsets,
-  }) : type = PuzzleType.missingLetter;
+  });
 
-  PuzzleRound.fullWord({
-    required this.puzzleImage,
-    required this.correctLetters,
-    required this.choices,
-    required this.slotOffsets,
-  }) : type = PuzzleType.fullWord;
+  bool get isFullWord => draggableSlotIndexes.length == targetLetters.length;
 }
 
 class _FeltPrompt extends StatelessWidget {
@@ -642,35 +665,68 @@ class _LetterDraggable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final image = Image.asset(
-      'assets/images/$letter.png',
-      width: 84,
-      height: 84,
-      fit: BoxFit.contain,
-    );
+    final tile = _LetterTile(letter: letter, size: 84);
 
     if (!enabled) {
-      return Opacity(opacity: 0.55, child: image);
+      return Opacity(opacity: 0.55, child: tile);
     }
 
     return Draggable<String>(
       data: letter,
       feedback: Material(
         color: Colors.transparent,
-        child: SizedBox(
-          width: 96,
-          height: 96,
-          child: Image.asset(
-            'assets/images/$letter.png',
-            fit: BoxFit.contain,
-          ),
-        ),
+        child: _LetterTile(letter: letter, size: 84),
       ),
       childWhenDragging: Opacity(
         opacity: 0.30,
-        child: image,
+        child: tile,
       ),
-      child: image,
+      child: tile,
+    );
+  }
+}
+
+class _LetterTile extends StatelessWidget {
+  final String letter;
+  final double size;
+
+  const _LetterTile({
+    required this.letter,
+    required this.size,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Image.asset(
+      'assets/images/$letter.png',
+      width: size,
+      height: size,
+      fit: BoxFit.contain,
+      errorBuilder: (context, error, stackTrace) {
+        return Container(
+          width: size,
+          height: size,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.9),
+            shape: BoxShape.circle,
+            boxShadow: const [
+              BoxShadow(
+                blurRadius: 6,
+                color: Colors.black26,
+              ),
+            ],
+          ),
+          child: Text(
+            letter,
+            style: TextStyle(
+              fontSize: size * 0.42,
+              fontWeight: FontWeight.w900,
+              color: Colors.black87,
+            ),
+          ),
+        );
+      },
     );
   }
 }

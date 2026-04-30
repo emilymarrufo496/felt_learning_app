@@ -166,9 +166,9 @@ class _LadybugAdditionGameScreenState extends State<LadybugAdditionGameScreen>
               child: Padding(
                 padding: const EdgeInsets.only(top: 10),
                 child: _FeltPrompt(
-                  line1: "Catch 2 ladybugs.",
-                  line2: "Drag them into the basket.",
-                  subline: "Picked: $pickedCount / 2",
+                  line1: "Atrapa 2 mariquitas.",
+                  line2: "Arrástralas a la canasta.",
+                  subline: "Recogidas: $pickedCount / 2",
                 ),
               ),
             ),
@@ -305,7 +305,7 @@ class _LadybugAdditionGameScreenState extends State<LadybugAdditionGameScreen>
                   padding: const EdgeInsets.only(bottom: 14),
                   child: _FeltChoices(
                     question:
-                        "You picked 2 ladybugs.\nHow many spots are there altogether?",
+                        "Recogiste 2 mariquitas.\n¿Cuántos puntos hay en total?",
                     a: choices[0],
                     b: choices[1],
                     disabled: answered,
@@ -520,12 +520,12 @@ class _FeltChoices extends StatelessWidget {
             children: [
               OutlinedButton(
                 onPressed: onNewRound,
-                child: const Text("New Round"),
+                child: const Text("Nueva ronda"),
               ),
               const SizedBox(width: 10),
               ElevatedButton(
                 onPressed: showNext ? onNewRound : null,
-                child: const Text("Next"),
+                child: const Text("Siguiente"),
               ),
             ],
           ),

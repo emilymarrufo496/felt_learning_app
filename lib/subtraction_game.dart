@@ -57,15 +57,12 @@ class _SubtractionGameScreenState extends State<SubtractionGameScreen> {
     setState(() {});
   }
 
-  /// PERFECT apple placement: fixed slots centered on each green panel.
-  /// Distribution: 3,3,2,2 across 4 green panels (total 10).
-  /// Slots are normalized (0..1) so they scale to any screen size.
   List<_Apple> _spawnApplesPerfectSlots(int count) {
     const xCenters = <double>[
-      0.13, // panel 1
-      0.46, // panel 2
-      0.70, // panel 3
-      0.91, // panel 4
+      0.13,
+      0.46,
+      0.70,
+      0.91,
     ];
 
     const ySlots = <double>[
@@ -180,9 +177,9 @@ class _SubtractionGameScreenState extends State<SubtractionGameScreen> {
               child: Padding(
                 padding: const EdgeInsets.only(top: 10),
                 child: _FeltPrompt(
-                  line1: "There were $startApples apples.",
-                  line2: "Drag $taken into the basket.",
-                  subline: "Picked: $nowTaken / $taken",
+                  line1: "Había $startApples manzanas.",
+                  line2: "Arrastra $taken a la canasta.",
+                  subline: "Recogidas: $nowTaken / $taken",
                 ),
               ),
             ),
@@ -275,7 +272,7 @@ class _SubtractionGameScreenState extends State<SubtractionGameScreen> {
                   padding: const EdgeInsets.only(bottom: 14),
                   child: _FeltChoices(
                     question:
-                        "There were $startApples apples and you took $taken.\nHow many apples are left?",
+                        "Había $startApples manzanas y quitaste $taken.\n¿Cuántas manzanas quedan?",
                     a: choices[0],
                     b: choices[1],
                     disabled: answered,
@@ -486,12 +483,12 @@ class _FeltChoices extends StatelessWidget {
             children: [
               OutlinedButton(
                 onPressed: onNewRound,
-                child: const Text("New Round"),
+                child: const Text("Nueva ronda"),
               ),
               const SizedBox(width: 10),
               ElevatedButton(
                 onPressed: showNext ? onNewRound : null,
-                child: const Text("Next"),
+                child: const Text("Siguiente"),
               ),
             ],
           ),
