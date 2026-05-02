@@ -2,32 +2,38 @@ import 'dart:math';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 
-class SubtractionGameScreen extends StatefulWidget {
-  const SubtractionGameScreen({super.key});
+class LadybugAdditionGameScreen extends StatefulWidget {
+  const LadybugAdditionGameScreen({super.key});
 
   @override
-  State<SubtractionGameScreen> createState() => _SubtractionGameScreenState();
+  State<LadybugAdditionGameScreen> createState() =>
+      _LadybugAdditionGameScreenState();
 }
 
-class _SubtractionGameScreenState extends State<SubtractionGameScreen> {
-  static const int startApples = 10;
-
-  final _rng = Random();
+class _LadybugAdditionGameScreenState extends State<LadybugAdditionGameScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _wiggleController;
+  final Random _rng = Random();
   final AudioPlayer _player = AudioPlayer();
 
-  int taken = 2;
-  int remaining = startApples;
+  late List<LadybugData> roundLadybugs;
+  final List<LadybugData> basketLadybugs = [];
 
-  final List<_Apple> apples = [];
-
-  late int correctAnswer;
-  late List<int> choices;
+  int correctAnswer = 0;
+  List<int> choices = [];
 
   bool answered = false;
+  bool answeredCorrectly = false;
 
   @override
   void initState() {
     super.initState();
+
+    _wiggleController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    )..repeat();
+
     _newRound();
   }
 
@@ -42,118 +48,101 @@ class _SubtractionGameScreenState extends State<SubtractionGameScreen> {
   }
 
   void _newRound() {
-    taken = _rng.nextInt(4) + 2; // 2..5
-    remaining = startApples;
+    roundLadybugs = [
+      LadybugData(
+        asset: 'assets/images/one.png',
+        dots: 1,
+        baseX: 50,
+        baseY: 200,
+        phase: 0.0,
+      ),
+      LadybugData(
+        asset: 'assets/images/two.png',
+        dots: 2,
+        baseX: 200,
+        baseY: 300,
+        phase: 0.8,
+      ),
+      LadybugData(
+        asset: 'assets/images/three.png',
+        dots: 3,
+        baseX: 350,
+        baseY: 200,
+        phase: 1.6,
+      ),
+      LadybugData(
+        asset: 'assets/images/four.png',
+        dots: 4,
+        baseX: 120,
+        baseY: 420,
+        phase: 2.4,
+      ),
+      LadybugData(
+        asset: 'assets/images/five.png',
+        dots: 5,
+        baseX: 320,
+        baseY: 420,
+        phase: 3.2,
+      ),
+    ];
 
-    apples
-      ..clear()
-      ..addAll(_spawnApplesPerfectSlots(startApples));
-
-    correctAnswer = startApples - taken;
-    choices = _makeTwoChoices(correctAnswer);
-
+    basketLadybugs.clear();
+    correctAnswer = 0;
+    choices = [];
     answered = false;
+    answeredCorrectly = false;
 
     setState(() {});
   }
 
-  List<_Apple> _spawnApplesPerfectSlots(int count) {
-    const xCenters = <double>[
-      0.13,
-      0.46,
-      0.70,
-      0.91,
-    ];
-
-    const ySlots = <double>[
-      0.52,
-      0.63,
-      0.74,
-    ];
-
-    final perPanel = <int>[3, 3, 2, 2];
-    final slots = <Offset>[];
-
-    for (int p = 0; p < xCenters.length; p++) {
-      final x = xCenters[p];
-      final n = perPanel[p];
-
-      final ys =
-          (n == 3) ? [ySlots[0], ySlots[1], ySlots[2]] : [ySlots[0], ySlots[2]];
-
-      for (int i = 0; i < n; i++) {
-        final jx = (_rng.nextDouble() * 0.012 - 0.006);
-        final jy = (_rng.nextDouble() * 0.014 - 0.007);
-
-        slots.add(Offset(x + jx, ys[i] + jy));
-      }
-    }
-
-    final used = slots.take(count).toList();
-
-    return List.generate(
-      used.length,
-      (i) => _Apple(id: i, x: used[i].dx, y: used[i].dy),
-    );
-  }
-
   List<int> _makeTwoChoices(int correct) {
-    int distractor = correct + (_rng.nextBool() ? 1 : -1);
+    int wrong;
+    do {
+      wrong = correct + (_rng.nextBool() ? 1 : -1);
+      if (wrong < 1) wrong = correct + 2;
+    } while (wrong == correct);
 
-    if (distractor < 0) distractor = correct + 2;
-    if (distractor > 10) distractor = correct - 2;
-    if (distractor == correct) distractor = (correct == 0) ? 1 : correct - 1;
-
-    final list = [correct, distractor]..shuffle(_rng);
-    return list;
+    final result = [correct, wrong]..shuffle(_rng);
+    return result;
   }
 
-  void _onAppleDropped(int appleId) {
+  void _handleAnswer(int selected) {
+    if (basketLadybugs.length != 2) return;
     if (answered) return;
 
-    final idx = apples.indexWhere((a) => a.id == appleId);
-    if (idx == -1) return;
-
-    final alreadyTaken = startApples - remaining;
-    if (alreadyTaken >= taken) return;
-
-    setState(() {
-      apples.removeAt(idx);
-      remaining--;
-    });
-  }
-
-  void _choose(int value) {
-    final nowTaken = startApples - remaining;
-    if (nowTaken != taken) return;
-
-    if (value == correctAnswer) {
+    if (selected == correctAnswer) {
       _playCorrectSound();
+      setState(() {
+        answered = true;
+        answeredCorrectly = true;
+      });
     } else {
       _playWrongSound();
+      setState(() {
+        answered = false;
+        answeredCorrectly = false;
+      });
     }
-
-    setState(() {
-      answered = true;
-    });
   }
 
   @override
   void dispose() {
+    _wiggleController.dispose();
     _player.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final nowTaken = startApples - remaining;
+    final pickedCount = basketLadybugs.length;
+    final canAnswer = pickedCount == 2;
 
     return Scaffold(
       body: Stack(
         children: [
           Positioned.fill(
             child: Image.asset(
-              'assets/images/fields.png',
+              'assets/images/background.jpg',
               fit: BoxFit.cover,
             ),
           ),
@@ -177,9 +166,9 @@ class _SubtractionGameScreenState extends State<SubtractionGameScreen> {
               child: Padding(
                 padding: const EdgeInsets.only(top: 10),
                 child: _FeltPrompt(
-                  line1: "Había $startApples manzanas.",
-                  line2: "Arrastra $taken a la canasta.",
-                  subline: "Recogidas: $nowTaken / $taken",
+                  line1: "Atrapa 2 mariquitas.",
+                  line2: "Arrástralas a la canasta.",
+                  subline: "Recogidas: $pickedCount / 2",
                 ),
               ),
             ),
@@ -187,9 +176,25 @@ class _SubtractionGameScreenState extends State<SubtractionGameScreen> {
 
           Positioned(
             right: 18,
-            bottom: 18,
-            child: DragTarget<int>(
-              onAcceptWithDetails: (details) => _onAppleDropped(details.data),
+            bottom: 210,
+            child: DragTarget<LadybugData>(
+              onAcceptWithDetails: (details) {
+                final bug = details.data;
+
+                if (basketLadybugs.length >= 2 || answered) return;
+
+                if (!basketLadybugs.contains(bug)) {
+                  setState(() {
+                    basketLadybugs.add(bug);
+
+                    if (basketLadybugs.length == 2) {
+                      correctAnswer =
+                          basketLadybugs[0].dots + basketLadybugs[1].dots;
+                      choices = _makeTwoChoices(correctAnswer);
+                    }
+                  });
+                }
+              },
               builder: (context, candidateData, rejectedData) {
                 final highlight = candidateData.isNotEmpty;
 
@@ -200,7 +205,7 @@ class _SubtractionGameScreenState extends State<SubtractionGameScreen> {
                     alignment: Alignment.center,
                     children: [
                       Image.asset(
-                        'assets/images/basket.png',
+                        'assets/images/addition_basket.png',
                         width: 300,
                         height: 240,
                         fit: BoxFit.contain,
@@ -214,6 +219,16 @@ class _SubtractionGameScreenState extends State<SubtractionGameScreen> {
                             borderRadius: BorderRadius.circular(22),
                           ),
                         ),
+                      ...List.generate(basketLadybugs.length, (index) {
+                        return Positioned(
+                          left: 95 + (index * 48),
+                          top: 78 + (index * 6),
+                          child: Image.asset(
+                            basketLadybugs[index].asset,
+                            width: 70,
+                          ),
+                        );
+                      }),
                     ],
                   ),
                 );
@@ -221,50 +236,68 @@ class _SubtractionGameScreenState extends State<SubtractionGameScreen> {
             ),
           ),
 
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final w = constraints.maxWidth;
-              final h = constraints.maxHeight;
+          SafeArea(
+            child: AnimatedBuilder(
+              animation: _wiggleController,
+              builder: (context, child) {
+                final t = _wiggleController.value * 2 * pi;
 
-              final appleSize = (w * 0.12).clamp(54.0, 86.0);
+                return LayoutBuilder(
+                  builder: (context, constraints) {
+                    return Stack(
+                      children: [
+                        ...roundLadybugs
+                            .where((bug) => !basketLadybugs.contains(bug))
+                            .map((bug) {
+                          final wiggleX = sin(t + bug.phase) * 12;
+                          final wiggleY = cos(t + bug.phase) * 8;
 
-              return Stack(
-                children: [
-                  for (final a in apples)
-                    Positioned(
-                      left: (a.x * w) - (appleSize / 2),
-                      top: (a.y * h) - (appleSize / 2),
-                      child: Draggable<int>(
-                        data: a.id,
-                        feedback: Opacity(
-                          opacity: 0.85,
-                          child: Image.asset(
-                            'assets/images/apple.png',
-                            width: appleSize,
-                            height: appleSize,
-                          ),
-                        ),
-                        childWhenDragging: Opacity(
-                          opacity: 0.25,
-                          child: Image.asset(
-                            'assets/images/apple.png',
-                            width: appleSize,
-                            height: appleSize,
-                          ),
-                        ),
-                        child: Image.asset(
-                          'assets/images/apple.png',
-                          width: appleSize,
-                          height: appleSize,
-                        ),
-                      ),
-                    ),
-                ],
-              );
-            },
+                          return Positioned(
+                            left: bug.baseX + wiggleX,
+                            top: bug.baseY + wiggleY,
+                            child: basketLadybugs.length >= 2
+                                ? Transform.rotate(
+                                    angle: sin(t + bug.phase) * 0.08,
+                                    child: Image.asset(
+                                      bug.asset,
+                                      width: 110,
+                                    ),
+                                  )
+                                : Draggable<LadybugData>(
+                                    data: bug,
+                                    feedback: Material(
+                                      color: Colors.transparent,
+                                      child: Image.asset(
+                                        bug.asset,
+                                        width: 110,
+                                      ),
+                                    ),
+                                    childWhenDragging: Opacity(
+                                      opacity: 0.25,
+                                      child: Image.asset(
+                                        bug.asset,
+                                        width: 110,
+                                      ),
+                                    ),
+                                    child: Transform.rotate(
+                                      angle: sin(t + bug.phase) * 0.08,
+                                      child: Image.asset(
+                                        bug.asset,
+                                        width: 110,
+                                      ),
+                                    ),
+                                  ),
+                          );
+                        }),
+                      ],
+                    );
+                  },
+                );
+              },
+            ),
           ),
 
-          if (nowTaken == taken)
+          if (canAnswer)
             SafeArea(
               child: Align(
                 alignment: Alignment.bottomCenter,
@@ -272,13 +305,13 @@ class _SubtractionGameScreenState extends State<SubtractionGameScreen> {
                   padding: const EdgeInsets.only(bottom: 14),
                   child: _FeltChoices(
                     question:
-                        "Había $startApples manzanas y quitaste $taken.\n¿Cuántas manzanas quedan?",
+                        "Recogiste 2 mariquitas.\n¿Cuántos puntos hay en total?",
                     a: choices[0],
                     b: choices[1],
                     disabled: answered,
-                    onPick: _choose,
+                    onPick: _handleAnswer,
                     onNewRound: _newRound,
-                    showNext: answered,
+                    showNext: answeredCorrectly,
                   ),
                 ),
               ),
@@ -289,15 +322,19 @@ class _SubtractionGameScreenState extends State<SubtractionGameScreen> {
   }
 }
 
-class _Apple {
-  final int id;
-  final double x;
-  final double y;
+class LadybugData {
+  final String asset;
+  final int dots;
+  final double baseX;
+  final double baseY;
+  final double phase;
 
-  _Apple({
-    required this.id,
-    required this.x,
-    required this.y,
+  LadybugData({
+    required this.asset,
+    required this.dots,
+    required this.baseX,
+    required this.baseY,
+    required this.phase,
   });
 }
 
@@ -342,7 +379,7 @@ class _FeltPrompt extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(6),
               child: Image.asset(
-                'assets/images/apple.png',
+                'assets/images/two.png',
                 fit: BoxFit.contain,
               ),
             ),
