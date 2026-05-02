@@ -1,6 +1,7 @@
-import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:video_player/video_player.dart';
 
 class RainLessonPlaceholderScreen extends StatefulWidget {
   const RainLessonPlaceholderScreen({super.key});
@@ -12,27 +13,39 @@ class RainLessonPlaceholderScreen extends StatefulWidget {
 
 class _RainLessonPlaceholderScreenState
     extends State<RainLessonPlaceholderScreen> {
-  Timer? _timer;
-  int _secondsLeft = 2;
+  late final VideoPlayerController _controller;
+  bool _hasNavigated = false;
 
   @override
   void initState() {
     super.initState();
-    _timer = Timer.periodic(const Duration(seconds: 1), (t) {
-      if (!mounted) return;
-      setState(() => _secondsLeft = (_secondsLeft - 1).clamp(0, 9999));
-      if (_secondsLeft == 0) _goToMatching();
-    });
+
+    _controller = VideoPlayerController.asset('assets/videos/rain_stages.mp4')
+      ..initialize().then((_) {
+        if (!mounted) return;
+        setState(() {});
+        _controller.play();
+      });
+
+    _controller.addListener(_videoListener);
   }
 
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
+  void _videoListener() {
+    if (!_controller.value.isInitialized || _hasNavigated) return;
+
+    final finished =
+        _controller.value.position >= _controller.value.duration &&
+        !_controller.value.isPlaying;
+
+    if (finished) {
+      _goToMatching();
+    }
   }
 
   void _goToMatching() {
-    _timer?.cancel();
+    if (_hasNavigated) return;
+    _hasNavigated = true;
+
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (_) => const RainStagesMatchingScreen(),
@@ -41,12 +54,21 @@ class _RainLessonPlaceholderScreenState
   }
 
   @override
+  void dispose() {
+    _controller.removeListener(_videoListener);
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final isReady = _controller.value.isInitialized;
+
     return Scaffold(
       body: Stack(
         children: [
           Container(color: const Color(0xFFCFE8FF)),
-          const _SkyCloudsLayer(),
+          _SkyCloudsLayer(),
 
           SafeArea(
             child: Align(
@@ -68,9 +90,9 @@ class _RainLessonPlaceholderScreenState
                 padding: const EdgeInsets.only(top: 10),
                 child: _FeltPrompt(
                   iconAsset: 'assets/images/clouds.png',
-                  line1: "Rain Lesson",
-                  line2: "Stages of rain in a cloud.",
-                  subline: "Continuing in: $_secondsLeft",
+                  line1: 'Lección de lluvia',
+                  line2: 'Mira el video antes de empezar.',
+                  subline: isReady ? 'Video listo' : 'Cargando video...',
                 ),
               ),
             ),
@@ -81,22 +103,77 @@ class _RainLessonPlaceholderScreenState
               padding: const EdgeInsets.fromLTRB(14, 120, 14, 16),
               child: Center(
                 child: _FeltCard(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.cloud, size: 60),
-                      const SizedBox(height: 10),
-                      const Text(
-                        'Lesson playing…',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.w900),
-                      ),
-                      const SizedBox(height: 14),
-                      ElevatedButton(
-                        onPressed: _goToMatching,
-                        child: const Text('Continue to Matching'),
-                      ),
-                    ],
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final maxVideoHeight = constraints.maxHeight * 0.6;
+
+                      return SingleChildScrollView(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (isReady)
+                              ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  maxHeight: maxVideoHeight,
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(18),
+                                  child: AspectRatio(
+                                    aspectRatio: _controller.value.aspectRatio,
+                                    child: VideoPlayer(_controller),
+                                  ),
+                                ),
+                              )
+                            else
+                              const SizedBox(
+                                height: 220,
+                                child: Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              ),
+                            const SizedBox(height: 14),
+                            Wrap(
+                              alignment: WrapAlignment.center,
+                              spacing: 10,
+                              runSpacing: 10,
+                              children: [
+                                ElevatedButton(
+                                  onPressed: isReady
+                                      ? () {
+                                          setState(() {
+                                            if (_controller.value.isPlaying) {
+                                              _controller.pause();
+                                            } else {
+                                              _controller.play();
+                                            }
+                                          });
+                                        }
+                                      : null,
+                                  child: Text(
+                                    isReady && _controller.value.isPlaying
+                                        ? 'Pausar'
+                                        : 'Reproducir',
+                                  ),
+                                ),
+                                OutlinedButton(
+                                  onPressed: isReady
+                                      ? () {
+                                          _controller.seekTo(Duration.zero);
+                                          _controller.play();
+                                        }
+                                      : null,
+                                  child: const Text('Repetir'),
+                                ),
+                                ElevatedButton(
+                                  onPressed: isReady ? _goToMatching : null,
+                                  child: const Text('Saltar'),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),
@@ -116,22 +193,56 @@ class RainStagesMatchingScreen extends StatefulWidget {
       _RainStagesMatchingScreenState();
 }
 
-class _RainStagesMatchingScreenState
-    extends State<RainStagesMatchingScreen> {
+class _RainStagesMatchingScreenState extends State<RainStagesMatchingScreen> {
   final List<_MatchItem> _items = const [
-    _MatchItem(word: 'Evaporation', imageAsset: 'assets/images/evaporation.png'),
-    _MatchItem(word: 'Condensation', imageAsset: 'assets/images/condensation.png'),
-    _MatchItem(word: 'Precipitation', imageAsset: 'assets/images/precipitation.png'),
-    _MatchItem(word: 'Collection', imageAsset: 'assets/images/collection.png'),
+    _MatchItem(
+      word: 'Evaporación',
+      imageAsset: 'assets/images/evaporation.png',
+    ),
+    _MatchItem(
+      word: 'Condensación',
+      imageAsset: 'assets/images/condensation.png',
+    ),
+    _MatchItem(
+      word: 'Precipitación',
+      imageAsset: 'assets/images/precipitation.png',
+    ),
+    _MatchItem(
+      word: 'Acumulación',
+      imageAsset: 'assets/images/collection.png',
+    ),
   ];
 
   late final List<String> _words;
   final Set<String> _matched = {};
 
+  late final AudioPlayer _correctPlayer;
+  late final AudioPlayer _wrongPlayer;
+
   @override
   void initState() {
     super.initState();
     _words = _items.map((e) => e.word).toList()..shuffle(Random());
+
+    _correctPlayer = AudioPlayer();
+    _wrongPlayer = AudioPlayer();
+  }
+
+  Future<void> _playCorrect() async {
+    await _correctPlayer.stop();
+    await _correctPlayer.play(AssetSource('audio/correct.mp3'));
+  }
+
+  Future<void> _playWrong() async {
+    await _wrongPlayer.stop();
+    await _wrongPlayer.play(AssetSource('audio/wrong.mp3'));
+  }
+
+  @override
+  void dispose() {
+    _correctPlayer.dispose();
+    _wrongPlayer.dispose();
+    super.dispose();
   }
 
   @override
@@ -144,7 +255,7 @@ class _RainStagesMatchingScreenState
       body: Stack(
         children: [
           Container(color: const Color(0xFFCFE8FF)),
-          const _SkyCloudsLayer(),
+          _SkyCloudsLayer(),
 
           SafeArea(
             child: Align(
@@ -166,9 +277,9 @@ class _RainStagesMatchingScreenState
                 padding: const EdgeInsets.only(top: 10),
                 child: _FeltPrompt(
                   iconAsset: 'assets/images/clouds.png',
-                  line1: "Stages of Rain",
-                  line2: "Drag each word onto the matching image.",
-                  subline: "Matched: $matchedCount / $total",
+                  line1: 'Etapas de la lluvia',
+                  line2: 'Arrastra cada palabra a la imagen correcta.',
+                  subline: 'Emparejadas: $matchedCount / $total',
                 ),
               ),
             ),
@@ -193,48 +304,61 @@ class _RainStagesMatchingScreenState
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: Wrap(
-                            spacing: 10,
-                            runSpacing: 10,
-                            children: _words.map((word) {
-                              final done = _matched.contains(word);
-                              return Opacity(
-                                opacity: done ? 0.35 : 1,
-                                child: Draggable<String>(
-                                  data: word,
-                                  feedback: Material(
-                                    color: Colors.transparent,
-                                    child: _FeltWordChip(word: word),
+                          child: SingleChildScrollView(
+                            child: Wrap(
+                              spacing: 10,
+                              runSpacing: 10,
+                              children: _words.map((word) {
+                                final done = _matched.contains(word);
+                                return Opacity(
+                                  opacity: done ? 0.35 : 1,
+                                  child: Draggable<String>(
+                                    data: word,
+                                    maxSimultaneousDrags: done ? 0 : 1,
+                                    feedback: Material(
+                                      color: Colors.transparent,
+                                      child: _FeltWordChip(word: word),
+                                    ),
+                                    childWhenDragging: _FeltWordChip(
+                                      word: word,
+                                      faded: true,
+                                    ),
+                                    child: _FeltWordChip(
+                                      word: word,
+                                      disabled: done,
+                                    ),
                                   ),
-                                  childWhenDragging:
-                                      _FeltWordChip(word: word, faded: true),
-                                  child: _FeltWordChip(
-                                      word: word, disabled: done),
-                                ),
-                              );
-                            }).toList(),
+                                );
+                              }).toList(),
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  if (allMatched)
+                  if (allMatched) ...[
+                    const SizedBox(height: 10),
                     _FeltCard(
                       child: Column(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           const Text(
-                            'Great job! You matched them all.',
+                            '✅ ¡Muy bien! Emparejaste todo.',
                             style: TextStyle(
-                                fontSize: 15, fontWeight: FontWeight.w900),
+                              fontSize: 15,
+                              fontWeight: FontWeight.w900,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 10),
                           ElevatedButton(
                             onPressed: () => Navigator.pop(context),
-                            child: const Text('Back to Scene'),
+                            child: const Text('Volver a la escena'),
                           ),
                         ],
                       ),
                     ),
+                  ],
                 ],
               ),
             ),
@@ -249,10 +373,13 @@ class _RainStagesMatchingScreenState
 
     return DragTarget<String>(
       onWillAcceptWithDetails: (_) => !isMatched,
-      onAcceptWithDetails: (details) {
+      onAcceptWithDetails: (details) async {
         final incoming = details.data;
         if (incoming == item.word) {
           setState(() => _matched.add(item.word));
+          await _playCorrect();
+        } else {
+          await _playWrong();
         }
       },
       builder: (context, candidates, rejects) {
@@ -262,8 +389,9 @@ class _RainStagesMatchingScreenState
           duration: const Duration(milliseconds: 120),
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: const Color(0xFFFFF6E9)
-                .withOpacity(highlight ? 0.98 : 0.92),
+            color: const Color(0xFFFFF6E9).withOpacity(
+              highlight ? 0.98 : 0.92,
+            ),
             borderRadius: BorderRadius.circular(22),
             border: Border.all(
               color: Colors.brown.withOpacity(highlight ? 0.60 : 0.35),
@@ -279,14 +407,22 @@ class _RainStagesMatchingScreenState
           ),
           child: Row(
             children: [
-              Image.asset(item.imageAsset,
-                  width: 56, height: 56, fit: BoxFit.contain),
+              Image.asset(
+                item.imageAsset,
+                width: 56,
+                height: 56,
+                fit: BoxFit.contain,
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  isMatched ? item.word : 'Drop here',
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.w900),
+                  isMatched ? item.word : 'Suelta aquí',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: isMatched
+                        ? FontWeight.w900
+                        : FontWeight.w800,
+                  ),
                 ),
               ),
             ],
@@ -297,51 +433,46 @@ class _RainStagesMatchingScreenState
   }
 }
 
-class _MatchItem {
-  final String word;
-  final String imageAsset;
-  const _MatchItem({required this.word, required this.imageAsset});
-}
-
 class _SkyCloudsLayer extends StatelessWidget {
-  const _SkyCloudsLayer();
-
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, c) {
-      final w = c.maxWidth;
-      final h = c.maxHeight;
-      final cloudBig = w * 0.44;
-      final cloudSmall = w * 0.36;
+    return LayoutBuilder(
+      builder: (context, c) {
+        final w = c.maxWidth;
+        final h = c.maxHeight;
+        final cloudBig = w * 0.44;
+        final cloudSmall = w * 0.36;
 
-      return Stack(
-        children: [
-          Positioned(
-            left: w * 0.08,
-            top: h * 0.08,
-            child: Image.asset(
-              'assets/images/clouds.png',
-              width: cloudBig,
-              fit: BoxFit.contain,
+        return Stack(
+          children: [
+            Positioned(
+              left: w * 0.08,
+              top: h * 0.08,
+              child: Image.asset(
+                'assets/images/clouds.png',
+                width: cloudBig,
+                fit: BoxFit.contain,
+              ),
             ),
-          ),
-          Positioned(
-            left: w * 0.52,
-            top: h * 0.11,
-            child: Image.asset(
-              'assets/images/clouds.png',
-              width: cloudSmall,
-              fit: BoxFit.contain,
+            Positioned(
+              left: w * 0.52,
+              top: h * 0.11,
+              child: Image.asset(
+                'assets/images/clouds.png',
+                width: cloudSmall,
+                fit: BoxFit.contain,
+              ),
             ),
-          ),
-        ],
-      );
-    });
+          ],
+        );
+      },
+    );
   }
 }
 
 class _FeltCard extends StatelessWidget {
   final Widget child;
+
   const _FeltCard({required this.child});
 
   @override
@@ -371,7 +502,11 @@ class _FeltWordChip extends StatelessWidget {
   final bool disabled;
   final bool faded;
 
-  const _FeltWordChip({required this.word, this.disabled = false, this.faded = false});
+  const _FeltWordChip({
+    required this.word,
+    this.disabled = false,
+    this.faded = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -455,7 +590,10 @@ class _FeltPrompt extends StatelessWidget {
               children: [
                 Text(
                   "$line1  $line2",
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -479,7 +617,10 @@ class _FeltIconButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
 
-  const _FeltIconButton({required this.icon, required this.onTap});
+  const _FeltIconButton({
+    required this.icon,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -507,4 +648,14 @@ class _FeltIconButton extends StatelessWidget {
       ),
     );
   }
+}
+
+class _MatchItem {
+  final String word;
+  final String imageAsset;
+
+  const _MatchItem({
+    required this.word,
+    required this.imageAsset,
+  });
 }

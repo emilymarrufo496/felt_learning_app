@@ -1,5 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:video_player/video_player.dart';
 
 class WaterCycleOrderGame extends StatefulWidget {
   const WaterCycleOrderGame({super.key});
@@ -9,21 +11,218 @@ class WaterCycleOrderGame extends StatefulWidget {
 }
 
 class _WaterCycleOrderGameState extends State<WaterCycleOrderGame> {
+  late final VideoPlayerController _controller;
+  bool _hasStartedGame = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = VideoPlayerController.asset('assets/videos/rain_stages.mp4')
+      ..initialize().then((_) {
+        if (!mounted) return;
+        setState(() {});
+        _controller.play();
+      });
+
+    _controller.addListener(_videoListener);
+  }
+
+  void _videoListener() {
+    if (!_controller.value.isInitialized || _hasStartedGame) return;
+
+    final finished =
+        _controller.value.position >= _controller.value.duration &&
+        !_controller.value.isPlaying;
+
+    if (finished) {
+      setState(() {
+        _hasStartedGame = true;
+      });
+    }
+  }
+
+  void _skipVideo() {
+    if (_hasStartedGame) return;
+    setState(() {
+      _hasStartedGame = true;
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_videoListener);
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _hasStartedGame
+        ? const _WaterCycleOrderGameBody()
+        : _WaterCycleVideoIntro(
+            controller: _controller,
+            onSkip: _skipVideo,
+          );
+  }
+}
+
+class _WaterCycleVideoIntro extends StatelessWidget {
+  final VideoPlayerController controller;
+  final VoidCallback onSkip;
+
+  const _WaterCycleVideoIntro({
+    required this.controller,
+    required this.onSkip,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isReady = controller.value.isInitialized;
+
+    return Scaffold(
+      body: Stack(
+        children: [
+          Container(color: const Color(0xFFCFE8FF)),
+          _SkyCloudsLayer(),
+
+          SafeArea(
+            child: Align(
+              alignment: Alignment.topLeft,
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: _FeltIconButton(
+                  icon: Icons.arrow_back,
+                  onTap: () => Navigator.pop(context),
+                ),
+              ),
+            ),
+          ),
+
+          SafeArea(
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: _FeltPrompt(
+                  iconAsset: 'assets/images/clouds.png',
+                  line1: 'Lección del ciclo del agua',
+                  line2: 'Mira el video antes de jugar.',
+                  subline: isReady ? 'Video listo' : 'Cargando video...',
+                ),
+              ),
+            ),
+          ),
+
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(14, 120, 14, 16),
+              child: Center(
+                child: _FeltCard(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final maxVideoHeight = constraints.maxHeight * 0.6;
+
+                      return SingleChildScrollView(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (isReady)
+                              ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  maxHeight: maxVideoHeight,
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(18),
+                                  child: AspectRatio(
+                                    aspectRatio: controller.value.aspectRatio,
+                                    child: VideoPlayer(controller),
+                                  ),
+                                ),
+                              )
+                            else
+                              const SizedBox(
+                                height: 220,
+                                child: Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              ),
+                            const SizedBox(height: 14),
+                            Wrap(
+                              alignment: WrapAlignment.center,
+                              spacing: 10,
+                              runSpacing: 10,
+                              children: [
+                                ElevatedButton(
+                                  onPressed: isReady
+                                      ? () {
+                                          if (controller.value.isPlaying) {
+                                            controller.pause();
+                                          } else {
+                                            controller.play();
+                                          }
+                                        }
+                                      : null,
+                                  child: Text(
+                                    isReady && controller.value.isPlaying
+                                        ? 'Pausar'
+                                        : 'Reproducir',
+                                  ),
+                                ),
+                                OutlinedButton(
+                                  onPressed: isReady
+                                      ? () {
+                                          controller.seekTo(Duration.zero);
+                                          controller.play();
+                                        }
+                                      : null,
+                                  child: const Text('Repetir'),
+                                ),
+                                ElevatedButton(
+                                  onPressed: isReady ? onSkip : null,
+                                  child: const Text('Saltar'),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _WaterCycleOrderGameBody extends StatefulWidget {
+  const _WaterCycleOrderGameBody();
+
+  @override
+  State<_WaterCycleOrderGameBody> createState() =>
+      _WaterCycleOrderGameBodyState();
+}
+
+class _WaterCycleOrderGameBodyState extends State<_WaterCycleOrderGameBody> {
   final List<_StageItem> correctOrder = const [
     _StageItem(
-      word: 'Evaporation',
+      word: 'Evaporación',
       imageAsset: 'assets/images/evaporation.png',
     ),
     _StageItem(
-      word: 'Condensation',
+      word: 'Condensación',
       imageAsset: 'assets/images/condensation.png',
     ),
     _StageItem(
-      word: 'Precipitation',
+      word: 'Precipitación',
       imageAsset: 'assets/images/precipitation.png',
     ),
     _StageItem(
-      word: 'Collection',
+      word: 'Acumulación',
       imageAsset: 'assets/images/collection.png',
     ),
   ];
@@ -34,10 +233,25 @@ class _WaterCycleOrderGameState extends State<WaterCycleOrderGame> {
   String? _resultMessage;
   bool? _isCorrect;
 
+  late final AudioPlayer _correctPlayer;
+  late final AudioPlayer _wrongPlayer;
+
   @override
   void initState() {
     super.initState();
+    _correctPlayer = AudioPlayer();
+    _wrongPlayer = AudioPlayer();
     _resetGame();
+  }
+
+  Future<void> _playCorrect() async {
+    await _correctPlayer.stop();
+    await _correctPlayer.play(AssetSource('audio/correct.mp3'));
+  }
+
+  Future<void> _playWrong() async {
+    await _wrongPlayer.stop();
+    await _wrongPlayer.play(AssetSource('audio/wrong.mp3'));
   }
 
   void _resetGame() {
@@ -49,12 +263,13 @@ class _WaterCycleOrderGameState extends State<WaterCycleOrderGame> {
     });
   }
 
-  void _checkAnswer() {
+  Future<void> _checkAnswer() async {
     if (userOrder.length != correctOrder.length) {
       setState(() {
-        _resultMessage = 'Place all 4 stages first.';
+        _resultMessage = 'Primero coloca las 4 etapas.';
         _isCorrect = false;
       });
+      await _playWrong();
       return;
     }
 
@@ -69,8 +284,21 @@ class _WaterCycleOrderGameState extends State<WaterCycleOrderGame> {
     setState(() {
       _isCorrect = correct;
       _resultMessage =
-          correct ? '✅ Correct Order!' : '❌ Not quite. Try again.';
+          correct ? '✅ ¡Orden correcto!' : '❌ Inténtalo otra vez.';
     });
+
+    if (correct) {
+      await _playCorrect();
+    } else {
+      await _playWrong();
+    }
+  }
+
+  @override
+  void dispose() {
+    _correctPlayer.dispose();
+    _wrongPlayer.dispose();
+    super.dispose();
   }
 
   @override
@@ -101,9 +329,9 @@ class _WaterCycleOrderGameState extends State<WaterCycleOrderGame> {
                 padding: const EdgeInsets.only(top: 10),
                 child: _FeltPrompt(
                   iconAsset: 'assets/images/clouds.png',
-                  line1: 'Order the Water Cycle',
-                  line2: 'Drag stages into the correct order.',
-                  subline: 'Placed: ${userOrder.length}/4',
+                  line1: 'Ordena el ciclo del agua',
+                  line2: 'Arrastra las etapas en el orden correcto.',
+                  subline: 'Colocadas: ${userOrder.length}/4',
                 ),
               ),
             ),
@@ -118,7 +346,7 @@ class _WaterCycleOrderGameState extends State<WaterCycleOrderGame> {
                     child: Column(
                       children: [
                         const Text(
-                          'Put the pictures in the correct order',
+                          'Pon las imágenes en el orden correcto',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w900,
@@ -133,8 +361,7 @@ class _WaterCycleOrderGameState extends State<WaterCycleOrderGame> {
                               onWillAcceptWithDetails: (details) {
                                 return userOrder.length == index &&
                                     !userOrder.any(
-                                      (item) =>
-                                          item.word == details.data.word,
+                                      (item) => item.word == details.data.word,
                                     );
                               },
                               onAcceptWithDetails: (details) {
@@ -276,12 +503,12 @@ class _WaterCycleOrderGameState extends State<WaterCycleOrderGame> {
                           children: [
                             OutlinedButton(
                               onPressed: _resetGame,
-                              child: const Text('Reset'),
+                              child: const Text('Reiniciar'),
                             ),
                             const SizedBox(width: 10),
                             ElevatedButton(
                               onPressed: _checkAnswer,
-                              child: const Text('Check Answer'),
+                              child: const Text('Revisar respuesta'),
                             ),
                           ],
                         ),
@@ -289,7 +516,7 @@ class _WaterCycleOrderGameState extends State<WaterCycleOrderGame> {
                           const SizedBox(height: 10),
                           ElevatedButton(
                             onPressed: () => Navigator.pop(context),
-                            child: const Text('Back'),
+                            child: const Text('Volver'),
                           ),
                         ],
                       ],

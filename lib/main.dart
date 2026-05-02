@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:felt_learning_app/screens/ladybug_addition_game.dart';
+
 import 'screens/english_zone_screen.dart';
-import 'screens/rain_minigame_flow.dart';
-<<<<<<< HEAD
-import 'screens/water_cycle_order_game.dart';
-=======
 import 'screens/math_menu_screen.dart';
->>>>>>> origin/emily-math-menu
+import 'screens/rain_minigame_flow.dart';
+import 'screens/water_cycle_order_game.dart';
 
 void main() => runApp(const FeltApp());
 
@@ -66,12 +63,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-<<<<<<< HEAD
   void _openOrderGame() {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => const WaterCycleOrderGame(),
-=======
+      ),
+    );
+  }
+
   void _openEnglishZone() {
     Navigator.push(
       context,
@@ -91,7 +90,29 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
           );
         },
->>>>>>> origin/emily-math-menu
+      ),
+    );
+  }
+
+  void _openMathMenu() {
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 450),
+        pageBuilder: (_, __, ___) => const MathMenuScreen(),
+        transitionsBuilder: (_, animation, __, child) {
+          final curved = CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeInOut,
+          );
+          return FadeTransition(
+            opacity: curved,
+            child: ScaleTransition(
+              scale: Tween<double>(begin: 0.98, end: 1.0).animate(curved),
+              child: child,
+            ),
+          );
+        },
       ),
     );
   }
@@ -103,61 +124,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         final w = constraints.maxWidth;
         final h = constraints.maxHeight;
 
-<<<<<<< HEAD
-      final fieldsHeight = h * 0.30;
-      final strawberrySize = w * 0.52;
-      final sunSize = w * 0.12;
-      final cloudBig = w * 0.44;
-      final cloudSmall = w * 0.36;
-
-      if (!_sunInitialized) {
-        _sunPos = Offset(w * 0.80, h * 0.05);
-        _sunInitialized = true;
-      }
-
-      return Scaffold(
-        body: Stack(
-          children: [
-            // SKY
-            Container(color: const Color(0xFFCFE8FF)),
-
-            // ☁️ CLOUD 1 -> rain lesson + matching game
-            _cloud(
-              left: w * 0.08,
-              top: h * 0.08,
-              width: cloudBig,
-              grey: _cloudsGrey,
-              onTap: _openMiniGame,
-            ),
-
-            // ☁️ CLOUD 2 -> water cycle order game
-            _cloud(
-              left: w * 0.52,
-              top: h * 0.11,
-              width: cloudSmall,
-              grey: _cloudsGrey,
-              onTap: _openOrderGame,
-            ),
-
-            // ☀️ SUN (draggable)
-            Positioned(
-              left: _sunPos.dx,
-              top: _sunPos.dy,
-              child: GestureDetector(
-                onPanUpdate: (details) {
-                  setState(() {
-                    _sunPos = Offset(
-                      (_sunPos.dx + details.delta.dx).clamp(0.0, w - sunSize),
-                      (_sunPos.dy + details.delta.dy).clamp(0.0, h - sunSize),
-                    );
-                  });
-                },
-                child: Image.asset(
-                  'assets/images/sun.png',
-                  width: sunSize,
-                  height: sunSize,
-                ),
-=======
         final fieldsHeight = h * 0.30;
         final strawberrySize = w * 0.52;
         final sunSize = w * 0.12;
@@ -172,58 +138,28 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         return Scaffold(
           body: Stack(
             children: [
+              // SKY
               Container(color: const Color(0xFFCFE8FF)),
 
+              // CLOUD 1 -> rain lesson + matching game
               _cloud(
                 left: w * 0.08,
                 top: h * 0.08,
                 width: cloudBig,
                 grey: _cloudsGrey,
                 onTap: _openMiniGame,
->>>>>>> origin/emily-math-menu
               ),
 
+              // CLOUD 2 -> water cycle ordering game
               _cloud(
                 left: w * 0.52,
                 top: h * 0.11,
                 width: cloudSmall,
                 grey: _cloudsGrey,
-                onTap: _openMiniGame,
+                onTap: _openOrderGame,
               ),
 
-<<<<<<< HEAD
-            // 🌾 Fields at bottom -> subtraction game
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    PageRouteBuilder(
-                      transitionDuration: const Duration(milliseconds: 450),
-                      pageBuilder: (_, __, ___) =>
-                          const SubtractionGameScreen(),
-                      transitionsBuilder: (_, animation, __, child) {
-                        final curved = CurvedAnimation(
-                          parent: animation,
-                          curve: Curves.easeInOut,
-                        );
-                        return FadeTransition(
-                          opacity: curved,
-                          child: ScaleTransition(
-                            scale: Tween<double>(begin: 0.98, end: 1.0)
-                                .animate(curved),
-                            child: child,
-                          ),
-                        );
-                      },
-                    ),
-                  );
-                },
-                child: SizedBox(
-                  height: fieldsHeight,
-                  width: double.infinity,
-=======
+              // SUN
               Positioned(
                 left: _sunPos.dx,
                 top: _sunPos.dy,
@@ -236,7 +172,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       );
                     });
                   },
->>>>>>> origin/emily-math-menu
                   child: Image.asset(
                     'assets/images/sun.png',
                     width: sunSize,
@@ -245,6 +180,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
               ),
 
+              // STRAWBERRY -> English zone
               AnimatedBuilder(
                 animation: _bobController,
                 builder: (context, child) {
@@ -264,32 +200,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
               ),
 
+              // FIELDS -> Math menu
               Align(
                 alignment: Alignment.bottomCenter,
                 child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      PageRouteBuilder(
-                        transitionDuration: const Duration(milliseconds: 450),
-                        pageBuilder: (_, __, ___) => const MathMenuScreen(),
-                        transitionsBuilder: (_, animation, __, child) {
-                          final curved = CurvedAnimation(
-                            parent: animation,
-                            curve: Curves.easeInOut,
-                          );
-                          return FadeTransition(
-                            opacity: curved,
-                            child: ScaleTransition(
-                              scale: Tween<double>(begin: 0.98, end: 1.0)
-                                  .animate(curved),
-                              child: child,
-                            ),
-                          );
-                        },
-                      ),
-                    );
-                  },
+                  onTap: _openMathMenu,
                   child: SizedBox(
                     height: fieldsHeight,
                     width: double.infinity,
