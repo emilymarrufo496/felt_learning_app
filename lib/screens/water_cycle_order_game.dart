@@ -36,18 +36,27 @@ class _WaterCycleOrderGameState extends State<WaterCycleOrderGame> {
         !_controller.value.isPlaying;
 
     if (finished) {
-      setState(() {
-        _hasStartedGame = true;
-      });
-    }
+  _controller.pause();
+  _controller.seekTo(Duration.zero);
+
+  setState(() {
+    _hasStartedGame = true;
+  });
+}
   }
 
   void _skipVideo() {
-    if (_hasStartedGame) return;
-    setState(() {
-      _hasStartedGame = true;
-    });
+  if (_hasStartedGame) return;
+
+  if (_controller.value.isInitialized) {
+    _controller.pause();
+    _controller.seekTo(Duration.zero);
   }
+
+  setState(() {
+    _hasStartedGame = true;
+  });
+}
 
   @override
   void dispose() {

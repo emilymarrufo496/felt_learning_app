@@ -43,15 +43,20 @@ class _RainLessonPlaceholderScreenState
   }
 
   void _goToMatching() {
-    if (_hasNavigated) return;
-    _hasNavigated = true;
+  if (_hasNavigated) return;
+  _hasNavigated = true;
 
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (_) => const RainStagesMatchingScreen(),
-      ),
-    );
+  if (_controller.value.isInitialized) {
+    _controller.pause();
+    _controller.seekTo(Duration.zero);
   }
+
+  Navigator.of(context).pushReplacement(
+    MaterialPageRoute(
+      builder: (_) => const RainStagesMatchingScreen(),
+    ),
+  );
+}
 
   @override
   void dispose() {
