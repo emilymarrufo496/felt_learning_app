@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:felt_learning_app/screens/ladybug_addition_game.dart';
+
 import 'screens/english_zone_screen.dart';
-import 'screens/rain_minigame_flow.dart';
 import 'screens/math_menu_screen.dart';
+import 'screens/rain_minigame_flow.dart';
+import 'screens/water_cycle_order_game.dart';
 
 void main() => runApp(const FeltApp());
 
@@ -62,12 +63,43 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
+  void _openOrderGame() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const WaterCycleOrderGame(),
+      ),
+    );
+  }
+
   void _openEnglishZone() {
     Navigator.push(
       context,
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 450),
         pageBuilder: (_, __, ___) => const EnglishZoneScreen(),
+        transitionsBuilder: (_, animation, __, child) {
+          final curved = CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeInOut,
+          );
+          return FadeTransition(
+            opacity: curved,
+            child: ScaleTransition(
+              scale: Tween<double>(begin: 0.98, end: 1.0).animate(curved),
+              child: child,
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  void _openMathMenu() {
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 450),
+        pageBuilder: (_, __, ___) => const MathMenuScreen(),
         transitionsBuilder: (_, animation, __, child) {
           final curved = CurvedAnimation(
             parent: animation,
@@ -106,8 +138,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         return Scaffold(
           body: Stack(
             children: [
+              // SKY
               Container(color: const Color(0xFFCFE8FF)),
 
+              // CLOUD 1 -> rain lesson + matching game
               _cloud(
                 left: w * 0.08,
                 top: h * 0.08,
@@ -116,14 +150,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 onTap: _openMiniGame,
               ),
 
+              // CLOUD 2 -> water cycle ordering game
               _cloud(
                 left: w * 0.52,
                 top: h * 0.11,
                 width: cloudSmall,
                 grey: _cloudsGrey,
-                onTap: _openMiniGame,
+                onTap: _openOrderGame,
               ),
 
+              // SUN
               Positioned(
                 left: _sunPos.dx,
                 top: _sunPos.dy,
@@ -144,6 +180,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
               ),
 
+              // STRAWBERRY -> English zone
               AnimatedBuilder(
                 animation: _bobController,
                 builder: (context, child) {
@@ -163,32 +200,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
               ),
 
+              // FIELDS -> Math menu
               Align(
                 alignment: Alignment.bottomCenter,
                 child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      PageRouteBuilder(
-                        transitionDuration: const Duration(milliseconds: 450),
-                        pageBuilder: (_, __, ___) => const MathMenuScreen(),
-                        transitionsBuilder: (_, animation, __, child) {
-                          final curved = CurvedAnimation(
-                            parent: animation,
-                            curve: Curves.easeInOut,
-                          );
-                          return FadeTransition(
-                            opacity: curved,
-                            child: ScaleTransition(
-                              scale: Tween<double>(begin: 0.98, end: 1.0)
-                                  .animate(curved),
-                              child: child,
-                            ),
-                          );
-                        },
-                      ),
-                    );
-                  },
+                  onTap: _openMathMenu,
                   child: SizedBox(
                     height: fieldsHeight,
                     width: double.infinity,
