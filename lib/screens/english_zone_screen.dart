@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'missing_letter_game.dart';
+import 'spanish_rhyme_game.dart';
 
 class EnglishZoneScreen extends StatelessWidget {
   const EnglishZoneScreen({super.key});
@@ -11,7 +12,7 @@ class EnglishZoneScreen extends StatelessWidget {
         children: [
           Positioned.fill(
             child: Image.asset(
-              'assets/images/background.jpg', // use your menu background here
+              'assets/images/background.jpg',
               fit: BoxFit.cover,
             ),
           ),
@@ -39,7 +40,7 @@ class EnglishZoneScreen extends StatelessWidget {
                   const SizedBox(height: 8),
 
                   Image.asset(
-                    'assets/images/english_zone_title.png', // make this later if you want
+                    'assets/images/english_zone_title.png',
                     height: 180,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
@@ -51,7 +52,7 @@ class EnglishZoneScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(30),
                         ),
                         child: const Text(
-                          'ENGLISH\nZONE',
+                          'SPANISH\nZONE',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 42,
@@ -70,11 +71,16 @@ class EnglishZoneScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       _EnglishCard(
-                        imagePath: 'assets/images/rhymezone.png',
-                        onTap: () {
-                          // add rhyming game later
-                        },
-                      ),
+  imagePath: 'assets/images/rhymezone.png',
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const SpanishRhymeGame(),
+      ),
+    );
+  },
+),
                       _EnglishCard(
                         imagePath: 'assets/images/spelling.png',
                         onTap: () {
