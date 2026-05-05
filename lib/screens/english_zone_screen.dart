@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'missing_letter_game.dart';
-import 'spanish_video_screen.dart'; // 👈 NEW IMPORT
+import 'spanish_video_screen.dart';
+import 'spanish_rhyme_game.dart';
 
 class EnglishZoneScreen extends StatelessWidget {
   const EnglishZoneScreen({super.key});
@@ -39,7 +40,6 @@ class EnglishZoneScreen extends StatelessWidget {
 
                   const SizedBox(height: 8),
 
-                  // HEADER
                   Image.asset(
                     'assets/images/english_zone_title.png',
                     height: 180,
@@ -53,7 +53,7 @@ class EnglishZoneScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(30),
                         ),
                         child: const Text(
-                          'ENGLISH\nZONE',
+                          'SPANISH\nZONE',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 42,
@@ -67,20 +67,21 @@ class EnglishZoneScreen extends StatelessWidget {
 
                   const Spacer(),
 
-                  // ICON ROW
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      // LEFT (RHYME)
                       _EnglishCard(
                         imagePath: 'assets/images/rhymezone.png',
                         onTap: () {
-                          // rhyming game later
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const SpanishRhymeGame(),
+                            ),
+                          );
                         },
                       ),
-
-                      // MIDDLE (SPELLING)
                       _EnglishCard(
                         imagePath: 'assets/images/spelling.png',
                         onTap: () {
@@ -92,8 +93,6 @@ class EnglishZoneScreen extends StatelessWidget {
                           );
                         },
                       ),
-
-                      // RIGHT (VIDEO)
                       _EnglishCard(
                         imagePath: 'assets/images/spanish_icon.png',
                         onTap: () {
