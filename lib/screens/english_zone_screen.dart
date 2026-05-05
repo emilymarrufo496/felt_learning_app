@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'missing_letter_game.dart';
+import 'spanish_video_screen.dart'; // 👈 NEW IMPORT
 
 class EnglishZoneScreen extends StatelessWidget {
   const EnglishZoneScreen({super.key});
@@ -11,7 +12,7 @@ class EnglishZoneScreen extends StatelessWidget {
         children: [
           Positioned.fill(
             child: Image.asset(
-              'assets/images/background.jpg', // use your menu background here
+              'assets/images/background.jpg',
               fit: BoxFit.cover,
             ),
           ),
@@ -38,8 +39,9 @@ class EnglishZoneScreen extends StatelessWidget {
 
                   const SizedBox(height: 8),
 
+                  // HEADER
                   Image.asset(
-                    'assets/images/english_zone_title.png', // make this later if you want
+                    'assets/images/english_zone_title.png',
                     height: 180,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
@@ -65,16 +67,20 @@ class EnglishZoneScreen extends StatelessWidget {
 
                   const Spacer(),
 
+                  // ICON ROW
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
+                      // LEFT (RHYME)
                       _EnglishCard(
                         imagePath: 'assets/images/rhymezone.png',
                         onTap: () {
-                          // add rhyming game later
+                          // rhyming game later
                         },
                       ),
+
+                      // MIDDLE (SPELLING)
                       _EnglishCard(
                         imagePath: 'assets/images/spelling.png',
                         onTap: () {
@@ -86,8 +92,18 @@ class EnglishZoneScreen extends StatelessWidget {
                           );
                         },
                       ),
-                      _EnglishPlaceholderCard(
-                        title: 'Coming Soon',
+
+                      // RIGHT (VIDEO)
+                      _EnglishCard(
+                        imagePath: 'assets/images/spanish_icon.png',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const SpanishVideoScreen(),
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -122,40 +138,6 @@ class _EnglishCard extends StatelessWidget {
         child: Image.asset(
           imagePath,
           fit: BoxFit.contain,
-        ),
-      ),
-    );
-  }
-}
-
-class _EnglishPlaceholderCard extends StatelessWidget {
-  final String title;
-
-  const _EnglishPlaceholderCard({
-    required this.title,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 170,
-      height: 170,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.78),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.pink.shade200, width: 3),
-        ),
-        child: Center(
-          child: Text(
-            title,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-              color: Colors.black87,
-            ),
-          ),
         ),
       ),
     );
