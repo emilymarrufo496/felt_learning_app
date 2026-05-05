@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'missing_letter_game.dart';
+import 'spanish_video_screen.dart';
 import 'spanish_rhyme_game.dart';
 
 class EnglishZoneScreen extends StatelessWidget {
@@ -71,16 +72,16 @@ class EnglishZoneScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       _EnglishCard(
-  imagePath: 'assets/images/rhymezone.png',
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const SpanishRhymeGame(),
-      ),
-    );
-  },
-),
+                        imagePath: 'assets/images/rhymezone.png',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const SpanishRhymeGame(),
+                            ),
+                          );
+                        },
+                      ),
                       _EnglishCard(
                         imagePath: 'assets/images/spelling.png',
                         onTap: () {
@@ -92,8 +93,16 @@ class EnglishZoneScreen extends StatelessWidget {
                           );
                         },
                       ),
-                      _EnglishPlaceholderCard(
-                        title: 'Coming Soon',
+                      _EnglishCard(
+                        imagePath: 'assets/images/spanish_icon.png',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const SpanishVideoScreen(),
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -128,40 +137,6 @@ class _EnglishCard extends StatelessWidget {
         child: Image.asset(
           imagePath,
           fit: BoxFit.contain,
-        ),
-      ),
-    );
-  }
-}
-
-class _EnglishPlaceholderCard extends StatelessWidget {
-  final String title;
-
-  const _EnglishPlaceholderCard({
-    required this.title,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 170,
-      height: 170,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.78),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.pink.shade200, width: 3),
-        ),
-        child: Center(
-          child: Text(
-            title,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-              color: Colors.black87,
-            ),
-          ),
         ),
       ),
     );
