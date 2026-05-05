@@ -239,7 +239,6 @@ class _WaterCycleOrderGameBodyState extends State<_WaterCycleOrderGameBody> {
   late List<_StageItem> shuffled;
   final List<_StageItem> userOrder = [];
 
-  String? _resultMessage;
   bool? _isCorrect;
 
   late final AudioPlayer _correctPlayer;
@@ -267,7 +266,6 @@ class _WaterCycleOrderGameBodyState extends State<_WaterCycleOrderGameBody> {
     setState(() {
       shuffled = List<_StageItem>.from(correctOrder)..shuffle(Random());
       userOrder.clear();
-      _resultMessage = null;
       _isCorrect = null;
     });
   }
@@ -275,7 +273,6 @@ class _WaterCycleOrderGameBodyState extends State<_WaterCycleOrderGameBody> {
   Future<void> _checkAnswer() async {
     if (userOrder.length != correctOrder.length) {
       setState(() {
-        _resultMessage = 'Primero coloca las 4 etapas.';
         _isCorrect = false;
       });
       await _playWrong();
@@ -292,8 +289,6 @@ class _WaterCycleOrderGameBodyState extends State<_WaterCycleOrderGameBody> {
 
     setState(() {
       _isCorrect = correct;
-      _resultMessage =
-          correct ? '✅ ¡Orden correcto!' : '❌ Inténtalo otra vez.';
     });
 
     if (correct) {
@@ -381,7 +376,6 @@ class _WaterCycleOrderGameBodyState extends State<_WaterCycleOrderGameBody> {
                                     )) {
                                   setState(() {
                                     userOrder.add(item);
-                                    _resultMessage = null;
                                     _isCorrect = null;
                                   });
                                 }
@@ -491,22 +485,6 @@ class _WaterCycleOrderGameBodyState extends State<_WaterCycleOrderGameBody> {
                   _FeltCard(
                     child: Column(
                       children: [
-                        if (_resultMessage != null) ...[
-                          Text(
-                            _resultMessage!,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w900,
-                              color: _isCorrect == null
-                                  ? Colors.black
-                                  : (_isCorrect!
-                                      ? Colors.green.shade800
-                                      : Colors.red.shade800),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                        ],
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [

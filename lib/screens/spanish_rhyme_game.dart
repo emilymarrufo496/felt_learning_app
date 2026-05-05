@@ -42,7 +42,6 @@ class _SpanishRhymeGameState extends State<SpanishRhymeGame> {
   late List<String> _currentOptions;
 
   int _index = 0;
-  String? _message;
   bool? _isCorrect;
 
   late final AudioPlayer _correctPlayer;
@@ -65,7 +64,6 @@ class _SpanishRhymeGameState extends State<SpanishRhymeGame> {
     _currentOptions = List<String>.from(_currentQuestion.options)
       ..shuffle(Random());
 
-    _message = null;
     _isCorrect = null;
   }
 
@@ -84,7 +82,6 @@ class _SpanishRhymeGameState extends State<SpanishRhymeGame> {
 
     setState(() {
       _isCorrect = correct;
-      _message = correct ? '✅ ¡Correcto!' : '❌ Inténtalo otra vez.';
     });
 
     if (correct) {
@@ -198,20 +195,6 @@ class _SpanishRhymeGameState extends State<SpanishRhymeGame> {
                                 }).toList(),
                               ),
 
-                              if (_message != null) ...[
-                                const SizedBox(height: 16),
-                                Text(
-                                  _message!,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w900,
-                                    color: _isCorrect == true
-                                        ? Colors.green.shade800
-                                        : Colors.red.shade800,
-                                  ),
-                                ),
-                              ],
 
                               if (_isCorrect == true) ...[
                                 const SizedBox(height: 12),
