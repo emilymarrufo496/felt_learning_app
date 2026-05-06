@@ -12,6 +12,7 @@ class MissingLetterGameScreen extends StatefulWidget {
 
 class _MissingLetterGameScreenState extends State<MissingLetterGameScreen> {
   final AudioPlayer _player = AudioPlayer();
+  final AudioPlayer _touchPlayer = AudioPlayer();
 
   late final List<SpellingWord> words;
 
@@ -181,6 +182,11 @@ class _MissingLetterGameScreenState extends State<MissingLetterGameScreen> {
     await _player.play(AssetSource('audio/wrong.mp3'));
   }
 
+  Future<void> _playTouchSound() async {
+    await _touchPlayer.stop();
+    await _touchPlayer.play(AssetSource('audio/touch.mp3'));
+  }
+
   void _startPuzzle(SpellingWord word) {
     setState(() {
       currentWord = word;
@@ -247,6 +253,7 @@ class _MissingLetterGameScreenState extends State<MissingLetterGameScreen> {
   @override
   void dispose() {
     _player.dispose();
+    _touchPlayer.dispose();
     super.dispose();
   }
 
@@ -301,9 +308,15 @@ class _MissingLetterGameScreenState extends State<MissingLetterGameScreen> {
                   final isHovered = index == selectedIndex;
 
                   return MouseRegion(
-                    onEnter: (_) => setState(() => selectedIndex = index),
+                    onEnter: (_) {
+                      setState(() => selectedIndex = index);
+                      _playTouchSound();
+                    },
                     onExit: (_) => setState(() => selectedIndex = -1),
                     child: GestureDetector(
+                      onTapDown: (_) {
+                        _playTouchSound();
+                      },
                       onTap: () => _startPuzzle(word),
                       child: AnimatedScale(
                         duration: const Duration(milliseconds: 180),

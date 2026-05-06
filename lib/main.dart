@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 import 'screens/english_zone_screen.dart';
 import 'screens/math_menu_screen.dart';
@@ -27,13 +28,16 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
-  bool _cloudsGrey = false;
-
-  Offset _sunPos = const Offset(0, 0);
-  bool _sunInitialized = false;
-
   late final AnimationController _bobController;
   late final Animation<double> _bobY;
+
+  final AudioPlayer _touchPlayer = AudioPlayer();
+
+  Offset _sunPos = Offset.zero;
+  bool _sunInitialized = false;
+
+  bool _leftCloudGray = false;
+  bool _rightCloudGray = false;
 
   @override
   void initState() {
@@ -44,18 +48,25 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       duration: const Duration(milliseconds: 1800),
     )..repeat(reverse: true);
 
-    _bobY = Tween<double>(begin: -12, end: 12).animate(
+    _bobY = Tween<double>(begin: -10, end: 10).animate(
       CurvedAnimation(parent: _bobController, curve: Curves.easeInOut),
     );
+  }
+
+  Future<void> _playTouchSound() async {
+    await _touchPlayer.stop();
+    await _touchPlayer.play(AssetSource('audio/touch.mp3'));
   }
 
   @override
   void dispose() {
     _bobController.dispose();
+    _touchPlayer.dispose();
     super.dispose();
   }
 
   void _openMiniGame() {
+    _playTouchSound();
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => const RainLessonPlaceholderScreen(),
@@ -64,6 +75,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _openOrderGame() {
+    _playTouchSound();
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => const WaterCycleOrderGame(),
@@ -72,6 +84,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _openEnglishZone() {
+    _playTouchSound();
     Navigator.push(
       context,
       PageRouteBuilder(
@@ -82,6 +95,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             parent: animation,
             curve: Curves.easeInOut,
           );
+
           return FadeTransition(
             opacity: curved,
             child: ScaleTransition(
@@ -95,6 +109,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _openMathMenu() {
+    _playTouchSound();
     Navigator.push(
       context,
       PageRouteBuilder(
@@ -105,6 +120,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             parent: animation,
             curve: Curves.easeInOut,
           );
+
           return FadeTransition(
             opacity: curved,
             child: ScaleTransition(
@@ -117,6 +133,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
+  void _tapLeftCloud() {
+    _playTouchSound();
+    setState(() {
+      _leftCloudGray = !_leftCloudGray;
+    });
+    _openMiniGame();
+  }
+
+  void _tapRightCloud() {
+    _playTouchSound();
+    setState(() {
+      _rightCloudGray = !_rightCloudGray;
+    });
+    _openOrderGame();
+  }
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -124,46 +156,53 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         final w = constraints.maxWidth;
         final h = constraints.maxHeight;
 
-        final fieldsHeight = h * 0.30;
-        final strawberrySize = w * 0.52;
-        final sunSize = w * 0.12;
-        final cloudBig = w * 0.44;
-        final cloudSmall = w * 0.36;
+        final fieldsHeight = h * 0.45;
+        final strawberrySize = w * 0.36;
+        final sunSize = w * 0.18;
 
         if (!_sunInitialized) {
-          _sunPos = Offset(w * 0.80, h * 0.05);
+          _sunPos = Offset(w * 0.78, h * 0.04);
           _sunInitialized = true;
         }
 
         return Scaffold(
           body: Stack(
             children: [
-              // SKY
-              Container(color: const Color(0xFFCFE8FF)),
+              Container(color: const Color(0xFF8FD6E8)),
 
-              // CLOUD 1 -> rain lesson + matching game
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: fieldsHeight - 5,
+                child: Image.asset(
+                  'assets/images/mountain.png',
+                  width: double.infinity,
+                  fit: BoxFit.fitWidth,
+                ),
+              ),
+
               _cloud(
-                left: w * 0.08,
+                left: w * 0.13,
                 top: h * 0.08,
-                width: cloudBig,
-                grey: _cloudsGrey,
-                onTap: _openMiniGame,
+                width: w * 0.30,
+                isGray: _leftCloudGray,
+                onTap: _tapLeftCloud,
               ),
 
-              // CLOUD 2 -> water cycle ordering game
               _cloud(
-                left: w * 0.52,
-                top: h * 0.11,
-                width: cloudSmall,
-                grey: _cloudsGrey,
-                onTap: _openOrderGame,
+                left: w * 0.59,
+                top: h * 0.08,
+                width: w * 0.30,
+                isGray: _rightCloudGray,
+                onTap: _tapRightCloud,
               ),
 
-              // SUN
               Positioned(
                 left: _sunPos.dx,
                 top: _sunPos.dy,
                 child: GestureDetector(
+                  onTapDown: (_) => _playTouchSound(),
+                  onPanStart: (_) => _playTouchSound(),
                   onPanUpdate: (details) {
                     setState(() {
                       _sunPos = Offset(
@@ -176,17 +215,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     'assets/images/sun.png',
                     width: sunSize,
                     height: sunSize,
+                    fit: BoxFit.contain,
                   ),
                 ),
               ),
 
-              // STRAWBERRY -> English zone
               AnimatedBuilder(
                 animation: _bobController,
                 builder: (context, child) {
                   return Positioned(
                     left: (w - strawberrySize) / 2,
-                    top: (h * 0.34) + _bobY.value,
+                    top: (h * 0.15) + _bobY.value,
                     child: child!,
                   );
                 },
@@ -200,18 +239,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
               ),
 
-              // FIELDS -> Math menu
-              Align(
-                alignment: Alignment.bottomCenter,
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                height: fieldsHeight,
                 child: GestureDetector(
                   onTap: _openMathMenu,
-                  child: SizedBox(
-                    height: fieldsHeight,
+                  child: Image.asset(
+                    'assets/images/fields.png',
                     width: double.infinity,
-                    child: Image.asset(
-                      'assets/images/fields.png',
-                      fit: BoxFit.cover,
-                    ),
+                    height: fieldsHeight,
+                    fit: BoxFit.cover,
                   ),
                 ),
               ),
@@ -226,33 +265,32 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     required double left,
     required double top,
     required double width,
-    required bool grey,
+    required bool isGray,
     required VoidCallback onTap,
   }) {
-    const greyMatrix = <double>[
-      0.2126, 0.7152, 0.0722, 0, 0,
-      0.2126, 0.7152, 0.0722, 0, 0,
-      0.2126, 0.7152, 0.0722, 0, 0,
-      0, 0, 0, 1, 0,
-    ];
-
-    final cloudImage = Image.asset(
-      'assets/images/clouds.png',
-      width: width,
-      fit: BoxFit.contain,
-    );
-
     return Positioned(
       left: left,
       top: top,
       child: GestureDetector(
         onTap: onTap,
-        child: grey
-            ? ColorFiltered(
-                colorFilter: const ColorFilter.matrix(greyMatrix),
-                child: cloudImage,
-              )
-            : cloudImage,
+        child: ColorFiltered(
+          colorFilter: isGray
+              ? const ColorFilter.matrix([
+                  0.33, 0.33, 0.33, 0, 0,
+                  0.33, 0.33, 0.33, 0, 0,
+                  0.33, 0.33, 0.33, 0, 0,
+                  0, 0, 0, 1, 0,
+                ])
+              : const ColorFilter.mode(
+                  Colors.transparent,
+                  BlendMode.multiply,
+                ),
+          child: Image.asset(
+            'assets/images/clouds.png',
+            width: width,
+            fit: BoxFit.contain,
+          ),
+        ),
       ),
     );
   }

@@ -13,7 +13,9 @@ class _SubtractionGameScreenState extends State<SubtractionGameScreen> {
   static const int startApples = 10;
 
   final _rng = Random();
+
   final AudioPlayer _player = AudioPlayer();
+  final AudioPlayer _touchPlayer = AudioPlayer();
 
   int taken = 2;
   int remaining = startApples;
@@ -39,6 +41,11 @@ class _SubtractionGameScreenState extends State<SubtractionGameScreen> {
   Future<void> _playWrongSound() async {
     await _player.stop();
     await _player.play(AssetSource('audio/wrong.mp3'));
+  }
+
+  Future<void> _playTouchSound() async {
+    await _touchPlayer.stop();
+    await _touchPlayer.play(AssetSource('audio/touch.mp3'));
   }
 
   void _newRound() {
@@ -141,6 +148,7 @@ class _SubtractionGameScreenState extends State<SubtractionGameScreen> {
   @override
   void dispose() {
     _player.dispose();
+    _touchPlayer.dispose();
     super.dispose();
   }
 
@@ -236,6 +244,9 @@ class _SubtractionGameScreenState extends State<SubtractionGameScreen> {
                       top: (a.y * h) - (appleSize / 2),
                       child: Draggable<int>(
                         data: a.id,
+                        onDragStarted: () {
+                          _playTouchSound();
+                        },
                         feedback: Opacity(
                           opacity: 0.85,
                           child: Image.asset(
