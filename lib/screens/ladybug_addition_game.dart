@@ -14,7 +14,9 @@ class _LadybugAdditionGameScreenState extends State<LadybugAdditionGameScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _wiggleController;
   final Random _rng = Random();
+
   final AudioPlayer _player = AudioPlayer();
+  final AudioPlayer _touchPlayer = AudioPlayer();
 
   late List<LadybugData> roundLadybugs;
   final List<LadybugData> basketLadybugs = [];
@@ -45,6 +47,11 @@ class _LadybugAdditionGameScreenState extends State<LadybugAdditionGameScreen>
   Future<void> _playWrongSound() async {
     await _player.stop();
     await _player.play(AssetSource('audio/wrong.mp3'));
+  }
+
+  Future<void> _playTouchSound() async {
+    await _touchPlayer.stop();
+    await _touchPlayer.play(AssetSource('audio/touch.mp3'));
   }
 
   void _newRound() {
@@ -129,6 +136,7 @@ class _LadybugAdditionGameScreenState extends State<LadybugAdditionGameScreen>
   void dispose() {
     _wiggleController.dispose();
     _player.dispose();
+    _touchPlayer.dispose();
     super.dispose();
   }
 
@@ -265,6 +273,9 @@ class _LadybugAdditionGameScreenState extends State<LadybugAdditionGameScreen>
                                   )
                                 : Draggable<LadybugData>(
                                     data: bug,
+                                    onDragStarted: () {
+                                      _playTouchSound();
+                                    },
                                     feedback: Material(
                                       color: Colors.transparent,
                                       child: Image.asset(
